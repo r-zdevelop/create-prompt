@@ -22,9 +22,9 @@ if (!fs.existsSync(LOCAL_BASE)) {
 }
 
 function ask() {
-  rl.question("\n🚀 ¿De qué va el prompt de hoy, crack?\n> ", (input) => {
+  rl.question("\n❔ Type the prompt name (e.g., 'create landing', 'login bug', 'registration form'): ", (input) => {
     if (!input.trim()) {
-      console.log("🤡 ¡Venga, no me dejes en blanco!");
+      console.log("❗ Por favor ingresa un nombre válido.");
       ask();
       return;
     }
@@ -43,7 +43,7 @@ function ask() {
 
     fs.copyFileSync(LOCAL_BASE, fullpath);
     
-    console.log("\n✅ ¡Prompt creado con amor!");
+    console.log("\n✅ Prompt created!");
     console.log(`📄 ${filename}`);
     console.log(`📁 ${fullpath}\n`);
     
@@ -51,5 +51,5 @@ function ask() {
   });
 }
 
-console.log("\n✨ create-prompt v1.0.0 – as simple as like that ✨\n");
+console.log("\n✨ create-prompt v1.0.0 🚀\n");
 ask();
