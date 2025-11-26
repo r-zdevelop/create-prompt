@@ -12,19 +12,19 @@ const PROMPT_DIR = '.prompts';
 const BASE_TEMPLATE = path.join(__dirname, '../templates/base_prompt.md');
 const LOCAL_BASE = path.join(process.cwd(), PROMPT_DIR, 'base_prompt.md');
 
-// Create .prompts folder if it doesn't exist
-if (!fs.existsSync(PROMPT_DIR)) fs.mkdirSync(PROMPT_DIR);
+// Crear carpeta .prompts si no existe
+if (!fs.existsSync(PROMPT_DIR)) fs.mkdirSync(PROMPT_DIR, { recursive: true });
 
-// Copy base template the very first time
+// Copiar template base la primera vez
 if (!fs.existsSync(LOCAL_BASE)) {
   fs.copyFileSync(BASE_TEMPLATE, LOCAL_BASE);
-  console.log("⚙️  base_prompt.md copied to your project");
+  console.log("base_prompt.md copied to your project");
 }
 
 function askForLastThing() {
-  rl.question("\nWhat’s the last thing you remember doing in this folder? 🤔\n> ", (lastThing) => {
+  rl.question("\nWhat’s the last thing you remember doing in this folder? \n> ", (lastThing) => {
     if (!lastThing.trim()) {
-      console.log("Come on, tell me something! 😜");
+      console.log("Hey, don’t leave me hanging! Tell me something ");
       askForLastThing();
       return;
     }
@@ -34,46 +34,54 @@ function askForLastThing() {
 }
 
 function askForPromptName(lastThing) {
-  rl.question("\nGive this prompt a short name (e.g. 'add login', 'fix navbar', 'new feature'): ", (input) => {
+  rl.question("\nGive this prompt a short name (e.g. 'fix login', 'add dark mode'): ", (input) => {
     if (!input.trim()) {
-      console.log("You gotta give it a name, dude!");
+      console.log("Gotta name it, bro!");
       askForPromptName(lastThing);
       return;
     }
 
-    // ─── Generate filename ───
+    // Generate slug for filename
     const slug = input
       .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "_")
       .replace(/^_+|_+$/g, "");
 
-    const date = new Date().toISOString().slice(0,10).replace(/-/g, '');
-    const today = fs.readdirSync(PROMPT_DIR).filter(f => f.startsWith(date));
-    const count = String(today.length + 1).padStart(2, '0');
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const todayFiles = fs.readdirSync(PROMPT_DIR).filter(f => f.startsWith(date));
+    const count = String(todayFiles.length + 1).padStart(2, '0');
     const filename = `${date}_${count}_${slug}.md`;
     const fullpath = path.join(PROMPT_DIR, filename);
 
-    // ─── Create the file and inject the title + history ───
+    // Copy template
     fs.copyFileSync(LOCAL_BASE, fullpath);
 
+    // Read and modify content
     let content = fs.readFileSync(fullpath, 'utf8');
 
-    // Replace the title (assuming template has "# " or "# Title" at the top)
+    // 1. Set main title
     content = content.replace(/^#.*$/m, `# ${lastThing}`);
 
-    // Add to History section (create it if it doesn't exist)
-    const historyEntry = `${today.length + 1}. ${lastThing}`;
+    // 2. Add to History with "- " (bullet style)
+    const historyLine = `- ${lastThing}`;
+
     if (content.includes("## History")) {
-      content = content.replace(/(## History\s*)([\s\S]*)/, `$1\n- ${historyEntry}\n$2`);
+      // Insert new entry right after "## History" line
+      content = content.replace(
+        /(## History\s*\n)/,
+        `$1${historyLine}\n`
+      );
     } else {
-      content += `\n\n## History\n\n- ${historyEntry}\n`;
+      // Create History section at the end
+      content += `\n\n## History\n\n${historyLine}\n`;
     }
 
     fs.writeFileSync(fullpath, content);
 
-    // ─── Victory message ───
-    console.log("\nPrompt created! 🎉\n");
+    // Victory dance
+    console.log("\nPrompt created! \n");
     console.log(`Title → "${lastThing}"`);
     console.log(`File  → ${filename}`);
     console.log(`Path  → ${fullpath}\n`);
@@ -82,5 +90,5 @@ function askForPromptName(lastThing) {
   });
 }
 
-console.log("\ncreate-prompt v1.1.0 – now with memory! 🧠\n");
+console.log("\ncreate-prompt v1.2.0 – now with clean bullet history! \n");
 askForLastThing();
