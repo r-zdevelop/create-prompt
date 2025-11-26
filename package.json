@@ -1,0 +1,25 @@
+{
+  "name": "create-prompt",
+  "version": "1.0.0",
+  "description": "Crea prompts organizados con fecha y contador automático para tus notas de AI en Markdown.",
+  "bin": {
+    "create-prompt": "./bin/create-prompt",
+    "p": "./bin/create-prompt"
+  },
+  "files": [
+    "bin/",
+    "templates/"
+  ],
+  "keywords": ["prompt", "ai", "notes", "frontend", "markdown", "cli"],
+  "author": "r-zdevelop",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/r-zdevelop/create-prompt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/r-zdevelop/create-prompt/issues"
+  },
+  "homepage": "https://github.com/r-zdevelop/create-prompt#readme",
+  "preferGlobal": true
+}

@@ -1,0 +1,55 @@
+#!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+const PROMPT_DIR = '.prompts';
+const BASE_TEMPLATE = path.join(__dirname, '../templates/base_prompt.md');
+const LOCAL_BASE = path.join(process.cwd(), PROMPT_DIR, 'base_prompt.md');
+
+// Crear carpeta .prompts si no existe
+if (!fs.existsSync(PROMPT_DIR)) fs.mkdirSync(PROMPT_DIR);
+
+// Copiar template base la primera vez
+if (!fs.existsSync(LOCAL_BASE)) {
+  fs.copyFileSync(BASE_TEMPLATE, LOCAL_BASE);
+  console.log("⚙️  base_prompt.md copiado a tu proyecto");
+}
+
+function ask() {
+  rl.question("\n🚀 ¿De qué va el prompt de hoy, crack?\n> ", (input) => {
+    if (!input.trim()) {
+      console.log("🤡 ¡Venga, no me dejes en blanco!");
+      ask();
+      return;
+    }
+
+    const slug = input
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+
+    const date = new Date().toISOString().slice(0,10).replace(/-/g, '');
+    const today = fs.readdirSync(PROMPT_DIR).filter(f => f.startsWith(date));
+    const count = String(today.length + 1).padStart(2, '0');
+    const filename = `${date}_${count}_${slug}.md`;
+    const fullpath = path.join(PROMPT_DIR, filename);
+
+    fs.copyFileSync(LOCAL_BASE, fullpath);
+    
+    console.log("\n✅ ¡Prompt creado con amor!");
+    console.log(`📄 ${filename}`);
+    console.log(`📁 ${fullpath}\n`);
+    
+    rl.close();
+  });
+}
+
+console.log("\n✨ create-prompt v1.0.0 – as simple as like that ✨\n");
+ask();
