@@ -12,23 +12,36 @@ const PROMPT_DIR = '.prompts';
 const BASE_TEMPLATE = path.join(__dirname, '../templates/base_prompt.md');
 const LOCAL_BASE = path.join(process.cwd(), PROMPT_DIR, 'base_prompt.md');
 
-// Crear carpeta .prompts si no existe
+// Create .prompts folder if it doesn't exist
 if (!fs.existsSync(PROMPT_DIR)) fs.mkdirSync(PROMPT_DIR);
 
-// Copiar template base la primera vez
+// Copy base template the very first time
 if (!fs.existsSync(LOCAL_BASE)) {
   fs.copyFileSync(BASE_TEMPLATE, LOCAL_BASE);
-  console.log("⚙️  base_prompt.md copiado a tu proyecto");
+  console.log("⚙️  base_prompt.md copied to your project");
 }
 
-function ask() {
-  rl.question("\n❔ Type the prompt name (e.g., 'create landing', 'login bug', 'registration form'): ", (input) => {
-    if (!input.trim()) {
-      console.log("❗ Por favor ingresa un nombre válido.");
-      ask();
+function askForLastThing() {
+  rl.question("\nWhat’s the last thing you remember doing in this folder? 🤔\n> ", (lastThing) => {
+    if (!lastThing.trim()) {
+      console.log("Come on, tell me something! 😜");
+      askForLastThing();
       return;
     }
 
+    askForPromptName(lastThing.trim());
+  });
+}
+
+function askForPromptName(lastThing) {
+  rl.question("\nGive this prompt a short name (e.g. 'add login', 'fix navbar', 'new feature'): ", (input) => {
+    if (!input.trim()) {
+      console.log("You gotta give it a name, dude!");
+      askForPromptName(lastThing);
+      return;
+    }
+
+    // ─── Generate filename ───
     const slug = input
       .toLowerCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -41,15 +54,33 @@ function ask() {
     const filename = `${date}_${count}_${slug}.md`;
     const fullpath = path.join(PROMPT_DIR, filename);
 
+    // ─── Create the file and inject the title + history ───
     fs.copyFileSync(LOCAL_BASE, fullpath);
-    
-    console.log("\n✅ Prompt created!");
-    console.log(`📄 ${filename}`);
-    console.log(`📁 ${fullpath}\n`);
-    
+
+    let content = fs.readFileSync(fullpath, 'utf8');
+
+    // Replace the title (assuming template has "# " or "# Title" at the top)
+    content = content.replace(/^#.*$/m, `# ${lastThing}`);
+
+    // Add to History section (create it if it doesn't exist)
+    const historyEntry = `${today.length + 1}. ${lastThing}`;
+    if (content.includes("## History")) {
+      content = content.replace(/(## History\s*)([\s\S]*)/, `$1\n- ${historyEntry}\n$2`);
+    } else {
+      content += `\n\n## History\n\n- ${historyEntry}\n`;
+    }
+
+    fs.writeFileSync(fullpath, content);
+
+    // ─── Victory message ───
+    console.log("\nPrompt created! 🎉\n");
+    console.log(`Title → "${lastThing}"`);
+    console.log(`File  → ${filename}`);
+    console.log(`Path  → ${fullpath}\n`);
+
     rl.close();
   });
 }
 
-console.log("\n✨ create-prompt v1.0.0 🚀\n");
-ask();
+console.log("\ncreate-prompt v1.1.0 – now with memory! 🧠\n");
+askForLastThing();
