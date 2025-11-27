@@ -43,7 +43,7 @@ create-prompt/
 1. Always answer in English, because the user wants to improve his English.
 
 
-## History
+## History (the latest update is the first)
 
 - first prompt created.
 
