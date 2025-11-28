@@ -68,9 +68,9 @@ function askForPromptName(lastThing) {
     const historyLine = `- ${lastThing}`;
 
     if (content.includes("## History")) {
-      // Insert new entry right after "## History" line
+      // Insert new entry right after "## History" line (including any text on that line)
       content = content.replace(
-        /(## History\s*\n)/,
+        /(## History[^\n]*\n+)/,
         `$1${historyLine}\n`
       );
     } else {
@@ -79,6 +79,23 @@ function askForPromptName(lastThing) {
     }
 
     fs.writeFileSync(fullpath, content);
+
+    // Update base_prompt.md with the new history entry
+    let baseContent = fs.readFileSync(LOCAL_BASE, 'utf8');
+    const baseHistoryLine = `- ${lastThing}`;
+
+    if (baseContent.includes("## History")) {
+      // Insert new entry right after "## History" line (including any text on that line)
+      baseContent = baseContent.replace(
+        /(## History[^\n]*\n+)/,
+        `$1${baseHistoryLine}\n`
+      );
+    } else {
+      // Create History section at the end
+      baseContent += `\n\n## History\n\n${baseHistoryLine}\n`;
+    }
+
+    fs.writeFileSync(LOCAL_BASE, baseContent);
 
     // Victory dance
     console.log("\nPrompt created! \n");
@@ -90,5 +107,5 @@ function askForPromptName(lastThing) {
   });
 }
 
-console.log("\ncreate-prompt v1.2.0 – now with clean bullet history! \n");
+console.log("\ncreate-prompt v1.0.9 – now with clean bullet history! \n");
 askForLastThing();
