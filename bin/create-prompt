@@ -49,7 +49,7 @@ function shouldIgnore(itemPath, ignorePatterns) {
   const basename = path.basename(itemPath);
 
   // Always ignore node_modules, .git, and .DS_Store
-  const alwaysIgnore = ['node_modules', '.git', '.DS_Store'];
+  const alwaysIgnore = ['node_modules', '.git', '.DS_Store', 'vendor'];
   if (alwaysIgnore.includes(basename)) return true;
 
   // Check against gitignore patterns
