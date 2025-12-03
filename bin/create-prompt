@@ -155,7 +155,7 @@ function askForPromptName(lastThing) {
     let content = fs.readFileSync(fullpath, 'utf8');
 
     // 1. Set main title
-    content = content.replace(/^#.*$/m, `# ${lastThing}`);
+    content = content.replace(/^#.*$/m, `# ${input.trim()}`);
 
     // 2. Add to History with "- " (bullet style)
     const historyLine = `- ${lastThing}`;
@@ -192,7 +192,7 @@ function askForPromptName(lastThing) {
 
     // Victory dance
     console.log("\nPrompt created! \n");
-    console.log(`Title → "${lastThing}"`);
+    console.log(`Title → "${input.trim()}"`);
     console.log(`File  → ${filename}`);
     console.log(`Path  → ${fullpath}\n`);
 
