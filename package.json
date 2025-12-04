@@ -1,7 +1,7 @@
 {
   "name": "create-prompt",
-  "version": "1.1.2",
-  "description": "Crea prompts organizados con fecha y contador automático para tus notas de AI en Markdown.",
+  "version": "1.2.0",
+  "description": "Your daily prompt framework - creates organized AI prompts with smart auto-filling and context detection.",
   "bin": {
     "create-prompt": "./bin/create-prompt",
     "p": "./bin/create-prompt"

@@ -66,9 +66,9 @@ project-name/
 
 ## History
 
-- [Change/Update 1]
-- [Change/Update 2]
-- [Initial creation]
+- [Latest Change/Update]
+- [Previous Change/Update]
+- [N Previous Change/Update]
 
 ---
 
