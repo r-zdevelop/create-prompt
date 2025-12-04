@@ -10,6 +10,7 @@
 - **Project Structure**: Auto-generates project tree in your prompts
 - **History Tracking**: Keeps track of what you've been working on
 - **Date & Counter**: Automatic YYYYMMDD_NN naming
+- **Git Integration**: Automatically adds `.prompts` to `.gitignore` (if file exists)
 
 ## Installation
 
@@ -53,6 +54,15 @@ p -q
 ```
 
 Only asks the essential questions (last thing + prompt name).
+
+### Skip History Question
+```bash
+create-prompt --no-history
+# or combine with quick mode
+p -q --no-history
+```
+
+Skips the history question and sets it to "N/A". Useful when you want to jump straight to creating prompts.
 
 ### Generate Project Structure Only
 ```bash

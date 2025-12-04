@@ -20,14 +20,51 @@ if (args.includes('--project-structure')) {
 }
 
 const QUICK_MODE = args.includes('--quick') || args.includes('-q');
+const NO_HISTORY = args.includes('--no-history');
 
 // Crear carpeta .prompts si no existe
 if (!fs.existsSync(PROMPT_DIR)) fs.mkdirSync(PROMPT_DIR, { recursive: true });
 
+// Add .prompts to .gitignore if it exists and doesn't already include it
+const gitignorePath = path.join(process.cwd(), '.gitignore');
+if (fs.existsSync(gitignorePath)) {
+  const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
+  const lines = gitignoreContent.split('\n');
+  const hasPromptsEntry = lines.some(line => {
+    const trimmed = line.trim();
+    return trimmed === '.prompts' || trimmed === '.prompts/' || trimmed === '/.prompts';
+  });
+
+  if (!hasPromptsEntry) {
+    const newContent = gitignoreContent.endsWith('\n')
+      ? gitignoreContent + '.prompts\n'
+      : gitignoreContent + '\n.prompts\n';
+    fs.writeFileSync(gitignorePath, newContent);
+    console.log(".prompts added to .gitignore");
+  }
+}
+
 // Copiar template base la primera vez
 if (!fs.existsSync(LOCAL_BASE)) {
   fs.copyFileSync(BASE_TEMPLATE, LOCAL_BASE);
-  console.log("base_prompt.md copied to your project");
+
+  // Auto-fill project structure in base template
+  try {
+    let baseContent = fs.readFileSync(LOCAL_BASE, 'utf8');
+    const ignorePatterns = parseGitignore();
+    const projectName = path.basename(process.cwd());
+    const projectStructure = projectName + '/\n' + generateTree(process.cwd(), ignorePatterns);
+
+    baseContent = baseContent.replace(
+      /```\nproject-name\/[\s\S]*?```/,
+      '```\n' + projectStructure + '```'
+    );
+
+    fs.writeFileSync(LOCAL_BASE, baseContent);
+    console.log("base_prompt.md copied to your project with auto-generated structure");
+  } catch (e) {
+    console.log("base_prompt.md copied to your project");
+  }
 }
 
 // Parse .gitignore file
@@ -164,6 +201,12 @@ const promptData = {
 };
 
 function askForLastThing() {
+  if (NO_HISTORY) {
+    promptData.lastThing = 'N/A';
+    askForPromptName();
+    return;
+  }
+
   rl.question("\nWhat's the last thing you remember doing in this folder? \n> ", (lastThing) => {
     if (!lastThing.trim()) {
       console.log("Hey, don't leave me hanging! Tell me something ");
