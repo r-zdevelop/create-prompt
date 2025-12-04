@@ -1,0 +1,361 @@
+#!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+const PROMPT_DIR = '.prompts';
+const BASE_TEMPLATE = path.join(__dirname, '../templates/base_prompt.md');
+const LOCAL_BASE = path.join(process.cwd(), PROMPT_DIR, 'base_prompt.md');
+
+// Check for flags
+const args = process.argv.slice(2);
+if (args.includes('--project-structure')) {
+  generateProjectStructure();
+  process.exit(0);
+}
+
+const QUICK_MODE = args.includes('--quick') || args.includes('-q');
+const NO_HISTORY = args.includes('--no-history');
+
+// Crear carpeta .prompts si no existe
+if (!fs.existsSync(PROMPT_DIR)) fs.mkdirSync(PROMPT_DIR, { recursive: true });
+
+// Add .prompts to .gitignore if it exists and doesn't already include it
+const gitignorePath = path.join(process.cwd(), '.gitignore');
+if (fs.existsSync(gitignorePath)) {
+  const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
+  const lines = gitignoreContent.split('\n');
+  const hasPromptsEntry = lines.some(line => {
+    const trimmed = line.trim();
+    return trimmed === '.prompts' || trimmed === '.prompts/' || trimmed === '/.prompts';
+  });
+
+  if (!hasPromptsEntry) {
+    const newContent = gitignoreContent.endsWith('\n')
+      ? gitignoreContent + '.prompts\n'
+      : gitignoreContent + '\n.prompts\n';
+    fs.writeFileSync(gitignorePath, newContent);
+    console.log(".prompts added to .gitignore");
+  }
+}
+
+// Copiar template base la primera vez
+if (!fs.existsSync(LOCAL_BASE)) {
+  fs.copyFileSync(BASE_TEMPLATE, LOCAL_BASE);
+
+  // Auto-fill project structure in base template
+  try {
+    let baseContent = fs.readFileSync(LOCAL_BASE, 'utf8');
+    const ignorePatterns = parseGitignore();
+    const projectName = path.basename(process.cwd());
+    const projectStructure = projectName + '/\n' + generateTree(process.cwd(), ignorePatterns);
+
+    baseContent = baseContent.replace(
+      /```\nproject-name\/[\s\S]*?```/,
+      '```\n' + projectStructure + '```'
+    );
+
+    fs.writeFileSync(LOCAL_BASE, baseContent);
+    console.log("base_prompt.md copied to your project with auto-generated structure");
+  } catch (e) {
+    console.log("base_prompt.md copied to your project");
+  }
+}
+
+// Parse .gitignore file
+function parseGitignore() {
+  const gitignorePath = path.join(process.cwd(), '.gitignore');
+  const ignorePatterns = ['.prompts']; // Always ignore .prompts folder
+
+  if (fs.existsSync(gitignorePath)) {
+    const content = fs.readFileSync(gitignorePath, 'utf8');
+    const lines = content.split('\n')
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#'));
+    ignorePatterns.push(...lines);
+  }
+
+  return ignorePatterns;
+}
+
+// Check if a path should be ignored
+function shouldIgnore(itemPath, ignorePatterns) {
+  const basename = path.basename(itemPath);
+
+  // Always ignore node_modules, .git, and .DS_Store
+  const alwaysIgnore = ['node_modules', '.git', '.DS_Store', 'vendor'];
+  if (alwaysIgnore.includes(basename)) return true;
+
+  // Check against gitignore patterns
+  for (const pattern of ignorePatterns) {
+    if (pattern.endsWith('/') && basename === pattern.slice(0, -1)) return true;
+    if (basename === pattern) return true;
+    if (pattern.includes('*')) {
+      const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+      if (regex.test(basename)) return true;
+    }
+  }
+
+  return false;
+}
+
+// Generate tree structure recursively
+function generateTree(dirPath, ignorePatterns, prefix = '', isLast = true) {
+  const items = fs.readdirSync(dirPath)
+    .filter(item => !shouldIgnore(path.join(dirPath, item), ignorePatterns))
+    .sort((a, b) => {
+      const aIsDir = fs.statSync(path.join(dirPath, a)).isDirectory();
+      const bIsDir = fs.statSync(path.join(dirPath, b)).isDirectory();
+      if (aIsDir === bIsDir) return a.localeCompare(b);
+      return aIsDir ? -1 : 1;
+    });
+
+  let tree = '';
+
+  items.forEach((item, index) => {
+    const itemPath = path.join(dirPath, item);
+    const isLastItem = index === items.length - 1;
+    const connector = isLastItem ? '└── ' : '├── ';
+    const stats = fs.statSync(itemPath);
+
+    if (stats.isDirectory()) {
+      tree += prefix + connector + item + '/\n';
+      const newPrefix = prefix + (isLastItem ? '    ' : '│   ');
+      tree += generateTree(itemPath, ignorePatterns, newPrefix, isLastItem);
+    } else {
+      tree += prefix + connector + item + '\n';
+    }
+  });
+
+  return tree;
+}
+
+// Main function to generate project structure
+function generateProjectStructure() {
+  console.log('\nGenerating project structure...\n');
+
+  const ignorePatterns = parseGitignore();
+  const projectName = path.basename(process.cwd());
+  const tree = projectName + '/\n' + generateTree(process.cwd(), ignorePatterns);
+
+  const filename = 'project_structure.md';
+  const content = `# Project Structure\n\n\`\`\`\n${tree}\`\`\`\n`;
+
+  fs.writeFileSync(filename, content);
+
+  console.log(`Project structure saved to ${filename}`);
+  console.log('\nPreview:\n');
+  console.log(tree);
+}
+
+// Auto-detect context from package.json
+function getAutoContext() {
+  const context = {
+    environment: process.platform,
+    tools: [],
+    version: ''
+  };
+
+  const pkgPath = path.join(process.cwd(), 'package.json');
+  if (fs.existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      if (pkg.dependencies) {
+        const mainTools = Object.keys(pkg.dependencies).slice(0, 5);
+        context.tools = mainTools;
+      }
+      if (pkg.engines && pkg.engines.node) {
+        context.version = `Node ${pkg.engines.node}`;
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+  }
+
+  return context;
+}
+
+// Get project structure as string
+function getProjectStructureString() {
+  try {
+    const ignorePatterns = parseGitignore();
+    const projectName = path.basename(process.cwd());
+    return projectName + '/\n' + generateTree(process.cwd(), ignorePatterns);
+  } catch (e) {
+    return '';
+  }
+}
+
+// Prompt data collector
+const promptData = {
+  lastThing: '',
+  promptName: '',
+  tags: [],
+  task: '',
+  date: new Date().toISOString().slice(0, 10)
+};
+
+function askForLastThing() {
+  if (NO_HISTORY) {
+    promptData.lastThing = 'N/A';
+    askForPromptName();
+    return;
+  }
+
+  rl.question("\nWhat's the last thing you remember doing in this folder? \n> ", (lastThing) => {
+    if (!lastThing.trim()) {
+      console.log("Hey, don't leave me hanging! Tell me something ");
+      askForLastThing();
+      return;
+    }
+
+    promptData.lastThing = lastThing.trim();
+    askForPromptName();
+  });
+}
+
+function askForPromptName() {
+  rl.question("\nGive this prompt a short name (e.g. 'fix login', 'add dark mode'): ", (input) => {
+    if (!input.trim()) {
+      console.log("Gotta name it, bro!");
+      askForPromptName();
+      return;
+    }
+
+    promptData.promptName = input.trim();
+
+    if (QUICK_MODE) {
+      createPromptFile();
+    } else {
+      askForTags();
+    }
+  });
+}
+
+function askForTags() {
+  rl.question("\nTags (comma-separated, e.g. 'frontend, react, bug'): ", (input) => {
+    if (input.trim()) {
+      promptData.tags = input.split(',').map(t => t.trim()).filter(t => t);
+    }
+    askForTask();
+  });
+}
+
+function askForTask() {
+  rl.question("\nWhat do you want to accomplish? (your task/goal): ", (input) => {
+    if (input.trim()) {
+      promptData.task = input.trim();
+    }
+    createPromptFile();
+  });
+}
+
+function createPromptFile() {
+  // Generate slug for filename
+  const slug = promptData.promptName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const todayFiles = fs.readdirSync(PROMPT_DIR).filter(f => f.startsWith(date));
+  const count = String(todayFiles.length + 1).padStart(2, '0');
+  const filename = `${date}_${count}_${slug}.md`;
+  const fullpath = path.join(PROMPT_DIR, filename);
+
+  // Copy template
+  fs.copyFileSync(LOCAL_BASE, fullpath);
+
+  // Read and modify content
+  let content = fs.readFileSync(fullpath, 'utf8');
+
+  // 1. Replace metadata
+  content = content.replace('[YYYY-MM-DD]', promptData.date);
+  if (promptData.tags.length > 0) {
+    content = content.replace('[tag1, tag2, tag3]', promptData.tags.join(', '));
+  }
+
+  // 2. Set main title
+  content = content.replace(/^# \[Main Topic\/Goal\]$/m, `# ${promptData.promptName}`);
+
+  // 3. Replace task if provided
+  if (promptData.task) {
+    content = content.replace(
+      '[SPECIFIC USER REQUEST/GOAL - This is what the user wants to achieve]',
+      promptData.task
+    );
+  }
+
+  // 4. Auto-fill context
+  const autoContext = getAutoContext();
+  if (autoContext.environment) {
+    content = content.replace('[OS/System details]', autoContext.environment);
+  }
+  if (autoContext.tools.length > 0) {
+    content = content.replace('[Primary tools/stack]', autoContext.tools.join(', '));
+  }
+  if (autoContext.version) {
+    content = content.replace('[Relevant versions]', autoContext.version);
+  }
+
+  // 5. Auto-fill project structure if available
+  const projectStructure = getProjectStructureString();
+  if (projectStructure) {
+    content = content.replace(
+      /```\nproject-name\/[\s\S]*?```/,
+      '```\n' + projectStructure + '```'
+    );
+  }
+
+  // 6. Add to History with "- " (bullet style)
+  const historyLine = `- ${promptData.lastThing}`;
+
+  if (content.includes("## History")) {
+    content = content.replace(
+      /(## History[^\n]*\n+)/,
+      `$1${historyLine}\n`
+    );
+  } else {
+    content += `\n\n## History\n\n${historyLine}\n`;
+  }
+
+  fs.writeFileSync(fullpath, content);
+
+  // Update base_prompt.md with the new history entry
+  let baseContent = fs.readFileSync(LOCAL_BASE, 'utf8');
+  const baseHistoryLine = `- ${promptData.lastThing}`;
+
+  if (baseContent.includes("## History")) {
+    baseContent = baseContent.replace(
+      /(## History[^\n]*\n+)/,
+      `$1${baseHistoryLine}\n`
+    );
+  } else {
+    baseContent += `\n\n## History\n\n${baseHistoryLine}\n`;
+  }
+
+  fs.writeFileSync(LOCAL_BASE, baseContent);
+
+  // Victory dance
+  console.log("\n✨ Prompt created! \n");
+  console.log(`Title → "${promptData.promptName}"`);
+  console.log(`File  → ${filename}`);
+  console.log(`Path  → ${fullpath}`);
+  if (promptData.tags.length > 0) {
+    console.log(`Tags  → ${promptData.tags.join(', ')}`);
+  }
+  console.log('');
+
+  rl.close();
+}
+
+const version = QUICK_MODE ? "v1.2.0 (quick mode)" : "v1.2.0 (smart mode)";
+console.log(`\ncreate-prompt ${version} – your daily prompt framework! \n`);
+askForLastThing();
