@@ -71,6 +71,13 @@ create-prompt --project-structure
 
 Creates `project_structure.md` with your project tree (respects .gitignore).
 
+### Generate Files Markdown
+```bash
+create-prompt --files-markdown
+```
+
+Reads a list of file paths from `requested_files.txt` and generates `requested_files.md` containing the content of each file in markdown format. Perfect for sharing multiple files with AI tools or for documentation purposes.
+
 ## Template Customization
 
 Edit `.prompts/base_prompt.md` to customize your prompt template. Changes will apply to all new prompts.

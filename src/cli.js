@@ -1,7 +1,7 @@
 const config = require('./config');
 const { ensurePromptsInGitignore } = require('./utils/gitignore');
 const { initializeBaseTemplate } = require('./services/templateService');
-const { createPrompt, generateStructure } = require('./commands');
+const { createPrompt, generateStructure, generateFilesMarkdown } = require('./commands');
 
 /**
  * Parse command line arguments
@@ -12,7 +12,8 @@ function parseArguments(args) {
   return {
     quick: args.includes('--quick') || args.includes('-q'),
     noHistory: args.includes('--no-history'),
-    projectStructure: args.includes('--project-structure')
+    projectStructure: args.includes('--project-structure'),
+    filesMarkdown: args.includes('--files-markdown')
   };
 }
 
@@ -50,6 +51,12 @@ class CLI {
     // Handle --project-structure flag
     if (options.projectStructure) {
       generateStructure();
+      return;
+    }
+
+    // Handle --files-markdown flag
+    if (options.filesMarkdown) {
+      await generateFilesMarkdown();
       return;
     }
 
