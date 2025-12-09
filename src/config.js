@@ -43,6 +43,8 @@ module.exports = {
     PROMPT_NAME: "\nGive this prompt a short name (e.g. 'fix login', 'add dark mode'): ",
     TAGS: "\nTags (comma-separated, e.g. 'frontend, react, bug'): ",
     TASK: "\nWhat do you want to accomplish? (your task/goal): ",
+    FINISH_WHAT_DID: "What did you do in this directory? (required)\n> ",
+    FINISH_CHANGES: "\nDescribe the changes you performed:\n> ",
   },
 
   // Validation messages
