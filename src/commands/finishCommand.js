@@ -28,6 +28,41 @@ function askQuestion(rl, question, required = false) {
 }
 
 /**
+ * Ask user for multiline table input
+ * @param {readline.Interface} rl - Readline interface
+ * @returns {Promise<string>} User's table input
+ */
+function askForChangesTable(rl) {
+  return new Promise((resolve) => {
+    console.log("\nPaste your changes table (optional - press Enter twice to skip or finish):");
+    console.log("Format:");
+    console.log("| File | type | Changes |");
+    console.log("|------|------|---------|");
+    console.log("| **src/file.js** | Modified | • Change description |");
+    console.log("");
+
+    const lines = [];
+    let emptyLineCount = 0;
+
+    const handleLine = (line) => {
+      if (line.trim() === '') {
+        emptyLineCount++;
+        if (emptyLineCount >= 2 || (emptyLineCount === 1 && lines.length === 0)) {
+          rl.removeListener('line', handleLine);
+          rl.pause();
+          resolve(lines.join('\n'));
+        }
+      } else {
+        emptyLineCount = 0;
+        lines.push(line);
+      }
+    };
+
+    rl.on('line', handleLine);
+  });
+}
+
+/**
  * Get git status output
  * @returns {string} Git status output
  */
@@ -63,10 +98,10 @@ function performGitCommit(message) {
 /**
  * Create or replace latest_commit.md file
  * @param {string} whatUserDid - What the user did in the directory
- * @param {string} changesDescription - Description of changes
+ * @param {string} changesTable - Changes table
  * @param {string} gitStatus - Git status output
  */
-function createLatestCommitFile(whatUserDid, changesDescription, gitStatus) {
+function createLatestCommitFile(whatUserDid, changesTable, gitStatus) {
   const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
 
   // Ensure .prompts directory exists
@@ -77,16 +112,24 @@ function createLatestCommitFile(whatUserDid, changesDescription, gitStatus) {
   const latestCommitPath = path.join(promptsDir, 'latest_commit.md');
   const timestamp = new Date().toISOString();
 
-  const content = `# Latest Commit
+  let content = `# Latest Commit
 
 **Date:** ${timestamp}
 
 ## What I Did
 ${whatUserDid}
+`;
 
-## Changes Description
-${changesDescription}
+  // Add Changes section if table is provided
+  if (changesTable && changesTable.trim()) {
+    content += `
+## Changes
 
+${changesTable}
+`;
+  }
+
+  content += `
 ## Git Status Before Commit
 \`\`\`
 ${gitStatus}
@@ -101,11 +144,11 @@ ${gitStatus}
 }
 
 /**
- * Update base_prompt.md with latest commit section and history table
+ * Update base_prompt.md with latest commit section and history
  * @param {string} whatUserDid - What the user did in the directory
- * @param {string} changesDescription - Description of changes
+ * @param {string} changesTable - Changes table
  */
-function updateBasePromptWithCommit(whatUserDid, changesDescription) {
+function updateBasePromptWithCommit(whatUserDid, changesTable) {
   const basePromptPath = config.LOCAL_BASE_PATH;
 
   // Check if base_prompt.md exists
@@ -116,26 +159,38 @@ function updateBasePromptWithCommit(whatUserDid, changesDescription) {
 
   let content = fs.readFileSync(basePromptPath, 'utf8');
   const timestamp = new Date().toISOString();
-  const commitSummary = changesDescription || whatUserDid;
 
-  // Create the latest commit section
-  const latestCommitSection = `## Latest commit
+  // Build the latest commit section
+  let latestCommitSection = `## Latest Commit
 
 **Date:** ${timestamp}
-**Summary:** ${commitSummary}
 
+### What I Did
+${whatUserDid}
+`;
+
+  // Add Changes section if table is provided
+  if (changesTable && changesTable.trim()) {
+    latestCommitSection += `
+### Changes
+
+${changesTable}
+`;
+  }
+
+  latestCommitSection += `
 ---
 
 `;
 
-  // Check if "## Latest commit" section already exists
-  const latestCommitRegex = /## Latest commit[\s\S]*?(?=\n## )/;
+  // Check if "## Latest Commit" or "## Latest commit" section already exists
+  const latestCommitRegex = /## Latest [Cc]ommit[\s\S]*?(?=\n## )/;
 
   if (latestCommitRegex.test(content)) {
-    // Replace existing "## Latest commit" section
+    // Replace existing "## Latest Commit" section
     content = content.replace(latestCommitRegex, latestCommitSection);
   } else {
-    // Insert new "## Latest commit" section after "## History" and before "## Task"
+    // Insert new "## Latest Commit" section after "## History" and before "## Task"
     const historyTaskRegex = /(## History[\s\S]*?)(\n---\n+)(## Task)/;
 
     if (historyTaskRegex.test(content)) {
@@ -153,7 +208,7 @@ function updateBasePromptWithCommit(whatUserDid, changesDescription) {
   }
 
   // Add entry to History section
-  const historyEntry = `- ${commitSummary}`;
+  const historyEntry = `- ${whatUserDid}`;
 
   // Check if History section exists and is in bullet list format
   const historyBulletRegex = /(## History\n\n)((?:- .*\n)*)/;
@@ -199,22 +254,18 @@ async function finishCommand() {
     const gitStatus = getGitStatus();
     console.log(gitStatus);
 
-    // Step 3: Ask for changes description
-    const changesDescription = await askQuestion(
-      rl,
-      "\nDescribe the changes you performed:\n> ",
-      false
-    );
+    // Step 3: Ask for changes table (optional)
+    const changesTable = await askForChangesTable(rl);
 
     // Step 4: Create or replace latest_commit.md
-    createLatestCommitFile(whatUserDid, changesDescription, gitStatus);
+    createLatestCommitFile(whatUserDid, changesTable, gitStatus);
 
     // Step 5: Update base_prompt.md with latest commit section
-    updateBasePromptWithCommit(whatUserDid, changesDescription);
+    updateBasePromptWithCommit(whatUserDid, changesTable);
 
     // Step 6: Perform the commit
     console.log('\n💾 Creating git commit...');
-    const commitMessage = changesDescription || whatUserDid;
+    const commitMessage = whatUserDid;
     const success = performGitCommit(commitMessage);
 
     if (success) {
