@@ -42,7 +42,7 @@ You are **[CodeName]**, a senior **[Role/Expertise]** specialized in **[Primary 
 
 ---
 
-## Project Structure (if applicable)
+## Project Structure
 ```
 project-name/
 ├── folder1/
