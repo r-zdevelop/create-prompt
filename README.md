@@ -105,10 +105,22 @@ Creates `.prompts/project_structure.md` with your project tree and updates `.pro
 
 ### Generate Files Markdown
 ```bash
-create-prompt --files-markdown
+create-prompt files-markdown
+# or shortcut
+p fm
 ```
 
-Reads a list of file paths from `requested_files.txt` and generates `requested_files.md` containing the content of each file in markdown format. Perfect for sharing multiple files with AI tools or for documentation purposes.
+Creates `.prompts/requested_files.md` containing the content of files listed in `.prompts/requested_files.txt`. Perfect for sharing multiple files with AI tools or for documentation purposes.
+
+**How it works:**
+- Create/edit `.prompts/requested_files.txt` with file paths (one per line)
+- Run `p fm` to generate the markdown output
+- Example `requested_files.txt`:
+  ```txt
+  src/index.js
+  src/components/Header.jsx
+  README.md
+  ```
 
 ## Generated Files
 
@@ -119,6 +131,8 @@ The tool creates a `.prompts` directory in your project with:
 - **`latest_commit.md`** - Most recent commit details with file changes table
 - **`project_structure.md`** - Current project structure tree
 - **`ignore_files.txt`** - Custom patterns to ignore in project structure (optional)
+- **`requested_files.txt`** - List of file paths to include in markdown output (optional)
+- **`requested_files.md`** - Generated markdown with file contents
 
 ## Template Customization
 
@@ -145,7 +159,7 @@ create-prompt/
 | `create-prompt --no-history` | - | Skip history question |
 | `create-prompt finish` | `p finish` | Finish work, create commit with file tracking |
 | `create-prompt project-structure` | `p ps` | Generate project structure |
-| `create-prompt --files-markdown` | - | Generate markdown from file list |
+| `create-prompt files-markdown` | `p fm` | Generate markdown from file list |
 
 ## Workflow Example
 
@@ -158,7 +172,10 @@ p
 # 3. Generate updated project structure
 p ps
 
-# 4. Finish and commit with detailed tracking
+# 4. Generate markdown from specific files
+p fm
+
+# 5. Finish and commit with detailed tracking
 p finish
 ```
 

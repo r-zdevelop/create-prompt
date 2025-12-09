@@ -3,20 +3,44 @@ const path = require('path');
 const config = require('../config');
 
 /**
- * Generate a markdown file with the contents of files listed in requested_files.txt
- * @param {Object} options - Command options
- * @param {string} options.inputFile - Input file name (default: requested_files.txt)
- * @param {string} options.outputFile - Output file name (default: requested_files.md)
+ * Ensure requested_files.txt exists with default content
  */
-async function generateFilesMarkdown(options = {}) {
-  const inputFile = options.inputFile || 'requested_files.txt';
-  const outputFile = options.outputFile || 'requested_files.md';
+function ensureRequestedFilesExists() {
+  const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
+  const requestedFilesPath = path.join(promptsDir, 'requested_files.txt');
 
-  // Check if input file exists
-  if (!fs.existsSync(inputFile)) {
-    console.error(`❌ Error: ${inputFile} not found in this directory.`);
-    process.exit(1);
+  // Ensure .prompts directory exists
+  if (!fs.existsSync(promptsDir)) {
+    fs.mkdirSync(promptsDir, { recursive: true });
   }
+
+  // Create requested_files.txt if it doesn't exist
+  if (!fs.existsSync(requestedFilesPath)) {
+    const defaultContent = `# Add file paths to include in the markdown output
+# One file path per line
+# Examples:
+# src/index.js
+# src/components/Header.jsx
+# README.md
+`;
+    fs.writeFileSync(requestedFilesPath, defaultContent);
+    console.log(`✅ Created: ${requestedFilesPath}`);
+  }
+
+  return requestedFilesPath;
+}
+
+/**
+ * Generate a markdown file with the contents of files listed in requested_files.txt
+ */
+async function generateFilesMarkdown() {
+  console.log('\nGenerating files markdown...\n');
+
+  // Ensure requested_files.txt exists
+  const inputFile = ensureRequestedFilesExists();
+
+  const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
+  const outputFile = path.join(promptsDir, 'requested_files.md');
 
   try {
     // Initialize output file
@@ -26,7 +50,13 @@ async function generateFilesMarkdown(options = {}) {
     const fileList = fs.readFileSync(inputFile, 'utf-8')
       .split('\n')
       .map(line => line.trim())
-      .filter(line => line.length > 0);
+      .filter(line => line.length > 0 && !line.startsWith('#'));
+
+    if (fileList.length === 0) {
+      console.log('⚠️  No files listed in requested_files.txt');
+      console.log(`   Add file paths to: ${inputFile}`);
+      return;
+    }
 
     // Process each file
     for (const file of fileList) {
@@ -54,6 +84,7 @@ async function generateFilesMarkdown(options = {}) {
     // Write the output file
     fs.writeFileSync(outputFile, output, 'utf-8');
     console.log(`✅ Markdown file generated: ${outputFile}`);
+    console.log(`\nProcessed ${fileList.length} file(s)\n`);
   } catch (error) {
     console.error(`❌ Error: ${error.message}`);
     process.exit(1);

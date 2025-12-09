@@ -15,7 +15,7 @@ function parseArguments(args) {
     quick: args.includes('--quick') || args.includes('-q'),
     noHistory: args.includes('--no-history'),
     projectStructure: args.includes('--project-structure') || command === 'project-structure' || command === 'ps',
-    filesMarkdown: args.includes('--files-markdown'),
+    filesMarkdown: args.includes('--files-markdown') || command === 'files-markdown' || command === 'fm',
     finish: args.includes('finish'),
     command: command // First argument as command
   };
