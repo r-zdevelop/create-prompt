@@ -18,17 +18,56 @@ function updateBasePromptWithStructure(tree) {
 
   let content = fs.readFileSync(basePromptPath, 'utf8');
 
-  // Replace the project structure section
+  // Create the new project structure section
+  const newStructureSection = `## Project Structure (if applicable)\n\`\`\`\n${tree}\`\`\`\n\n---\n\n`;
+
+  // Replace the project structure section if it exists
   const structureRegex = /(## Project Structure \(if applicable\)\s*```\s*[\s\S]*?```)/;
 
-  const newStructureSection = `## Project Structure (if applicable)\n\`\`\`\n${tree}\`\`\``;
-
   if (structureRegex.test(content)) {
-    content = content.replace(structureRegex, newStructureSection);
+    // Replace existing section
+    content = content.replace(structureRegex, newStructureSection.trim());
     fs.writeFileSync(basePromptPath, content);
     console.log(`✅ Updated: ${basePromptPath}`);
   } else {
-    console.log('⚠️  Project Structure section not found in base_prompt.md');
+    // Section doesn't exist, add it before ## History
+    const historyRegex = /(## History)/;
+
+    if (historyRegex.test(content)) {
+      // Insert before History section
+      content = content.replace(historyRegex, `${newStructureSection}$1`);
+      fs.writeFileSync(basePromptPath, content);
+      console.log(`✅ Added Project Structure section before History in: ${basePromptPath}`);
+    } else {
+      console.log('⚠️  History section not found in base_prompt.md, cannot add Project Structure');
+    }
+  }
+}
+
+/**
+ * Ensure ignore_files.txt exists with default content
+ */
+function ensureIgnoreFilesExists() {
+  const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
+  const ignoreFilesPath = path.join(promptsDir, 'ignore_files.txt');
+
+  // Ensure .prompts directory exists
+  if (!fs.existsSync(promptsDir)) {
+    fs.mkdirSync(promptsDir, { recursive: true });
+  }
+
+  // Create ignore_files.txt if it doesn't exist
+  if (!fs.existsSync(ignoreFilesPath)) {
+    const defaultContent = `# Add files or directories to ignore in project structure
+# One pattern per line
+# Examples:
+# public/images
+# public/css
+# node_modules
+# *.log
+`;
+    fs.writeFileSync(ignoreFilesPath, defaultContent);
+    console.log(`✅ Created: ${ignoreFilesPath}`);
   }
 }
 
@@ -37,6 +76,9 @@ function updateBasePromptWithStructure(tree) {
  */
 function generateStructure() {
   console.log('\nGenerating project structure...\n');
+
+  // Ensure ignore_files.txt exists
+  ensureIgnoreFilesExists();
 
   const tree = getProjectStructureString();
 

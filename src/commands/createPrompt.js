@@ -14,16 +14,12 @@ async function collectUserInput(options) {
   };
 
   try {
-    // Ask for last thing (skip if --no-history)
-    if (!options.noHistory) {
-      data.lastThing = await input.askWithValidation(
-        config.PROMPTS.LAST_THING,
-        (answer) => answer ? null : config.VALIDATION.EMPTY_LAST_THING,
-        config.VALIDATION.EMPTY_LAST_THING
-      );
-    } else {
-      data.lastThing = 'N/A';
-    }
+    // Ask for task/goal (mandatory)
+    data.task = await input.askWithValidation(
+      config.PROMPTS.TASK,
+      (answer) => answer ? null : 'Please provide what you want to accomplish',
+      'Please provide what you want to accomplish'
+    );
 
     // Ask for prompt name
     data.promptName = await input.askWithValidation(
@@ -32,14 +28,15 @@ async function collectUserInput(options) {
       config.VALIDATION.EMPTY_PROMPT_NAME
     );
 
-    // Ask for tags and task (skip in quick mode)
+    // Ask for tags (skip in quick mode)
     if (!options.quick) {
       data.tags = await input.askTags(config.PROMPTS.TAGS);
-      data.task = await input.ask(config.PROMPTS.TASK);
     } else {
       data.tags = [];
-      data.task = '';
     }
+
+    // Set lastThing based on task for history tracking
+    data.lastThing = data.task;
 
     return data;
   } finally {

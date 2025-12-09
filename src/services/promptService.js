@@ -35,8 +35,8 @@ function createPromptFile(promptData) {
   // Write modified content
   fs.writeFileSync(fullpath, content);
 
-  // Update base template history
-  updateBaseTemplateHistory(promptData.lastThing);
+  // History is now only updated by 'p finish' command
+  // updateBaseTemplateHistory(promptData.lastThing);
 
   return {
     filename,

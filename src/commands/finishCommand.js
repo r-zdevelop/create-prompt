@@ -88,11 +88,11 @@ async function askForChangesTable(rl, files) {
         console.log("Finishing table input...");
         break;
       }
-      // Add file to table even without description
+      // Add file to table with default description
       tableRows.push({
         file: `**${file.path}**`,
         type: file.status,
-        changes: '' // Empty description
+        changes: 'No description provided'
       });
     } else {
       emptyCount = 0;
