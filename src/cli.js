@@ -9,13 +9,15 @@ const { createPrompt, generateStructure, generateFilesMarkdown, finishCommand } 
  * @returns {Object} Parsed options
  */
 function parseArguments(args) {
+  const command = args[0];
+
   return {
     quick: args.includes('--quick') || args.includes('-q'),
     noHistory: args.includes('--no-history'),
-    projectStructure: args.includes('--project-structure'),
+    projectStructure: args.includes('--project-structure') || command === 'project-structure' || command === 'ps',
     filesMarkdown: args.includes('--files-markdown'),
     finish: args.includes('finish'),
-    command: args[0] // First argument as command
+    command: command // First argument as command
   };
 }
 
@@ -56,7 +58,7 @@ class CLI {
       return;
     }
 
-    // Handle --project-structure flag
+    // Handle project-structure command (project-structure, ps, or --project-structure)
     if (options.projectStructure) {
       generateStructure();
       return;
