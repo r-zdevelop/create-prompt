@@ -28,38 +28,89 @@ function askQuestion(rl, question, required = false) {
 }
 
 /**
- * Ask user for multiline table input
- * @param {readline.Interface} rl - Readline interface
- * @returns {Promise<string>} User's table input
+ * Get list of modified/added/deleted files from git status
+ * @returns {Array} Array of file objects {path, status}
  */
-function askForChangesTable(rl) {
-  return new Promise((resolve) => {
-    console.log("\nPaste your changes table (optional - press Enter twice to skip or finish):");
-    console.log("Format:");
-    console.log("| File | type | Changes |");
-    console.log("|------|------|---------|");
-    console.log("| **src/file.js** | Modified | • Change description |");
-    console.log("");
+function getModifiedFiles() {
+  try {
+    const output = execSync('git status --porcelain', { encoding: 'utf8' });
+    const files = [];
 
-    const lines = [];
-    let emptyLineCount = 0;
+    output.split('\n').forEach(line => {
+      if (!line.trim()) return;
 
-    const handleLine = (line) => {
-      if (line.trim() === '') {
-        emptyLineCount++;
-        if (emptyLineCount >= 2 || (emptyLineCount === 1 && lines.length === 0)) {
-          rl.removeListener('line', handleLine);
-          rl.pause();
-          resolve(lines.join('\n'));
-        }
-      } else {
-        emptyLineCount = 0;
-        lines.push(line);
+      const statusCode = line.substring(0, 2).trim();
+      const filePath = line.substring(3).trim();
+
+      let status = 'Modified';
+      if (statusCode === 'A' || statusCode === '??') status = 'Added';
+      else if (statusCode === 'D') status = 'Deleted';
+      else if (statusCode === 'M') status = 'Modified';
+      else if (statusCode === 'R') status = 'Renamed';
+
+      files.push({ path: filePath, status });
+    });
+
+    return files;
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Ask user for changes description for each file
+ * @param {readline.Interface} rl - Readline interface
+ * @param {Array} files - Array of file objects
+ * @returns {Promise<string>} Formatted changes table
+ */
+async function askForChangesTable(rl, files) {
+  if (files.length === 0) {
+    console.log("\nNo files detected in git status.");
+    return '';
+  }
+
+  console.log("\nDescribe changes for each file (press Enter 3 times to finish):");
+  console.log("Tip: Use • for bullet points, <br> for line breaks\n");
+
+  const tableRows = [];
+  let emptyCount = 0;
+
+  for (const file of files) {
+    const description = await askQuestion(
+      rl,
+      `What did you do in "${file.path}"? (${file.status}) \n> `,
+      false
+    );
+
+    if (!description) {
+      emptyCount++;
+      if (emptyCount >= 3) {
+        console.log("Finishing table input...");
+        break;
       }
-    };
+    } else {
+      emptyCount = 0;
+      tableRows.push({
+        file: `**${file.path}**`,
+        type: file.status,
+        changes: description
+      });
+    }
+  }
 
-    rl.on('line', handleLine);
+  if (tableRows.length === 0) {
+    return '';
+  }
+
+  // Build the markdown table
+  let table = '| File | Type | Changes |\n';
+  table += '|------|------|---------|';
+
+  tableRows.forEach(row => {
+    table += `\n| ${row.file} | ${row.type} | ${row.changes} |`;
   });
+
+  return table;
 }
 
 /**
@@ -254,8 +305,9 @@ async function finishCommand() {
     const gitStatus = getGitStatus();
     console.log(gitStatus);
 
-    // Step 3: Ask for changes table (optional)
-    const changesTable = await askForChangesTable(rl);
+    // Step 3: Get modified files and ask for changes table (optional)
+    const modifiedFiles = getModifiedFiles();
+    const changesTable = await askForChangesTable(rl, modifiedFiles);
 
     // Step 4: Create or replace latest_commit.md
     createLatestCommitFile(whatUserDid, changesTable, gitStatus);
