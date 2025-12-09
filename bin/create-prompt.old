@@ -356,6 +356,5 @@ function createPromptFile() {
   rl.close();
 }
 
-const version = QUICK_MODE ? "v1.2.0 (quick mode)" : "v1.2.0 (smart mode)";
-console.log(`\ncreate-prompt ${version} – your daily prompt framework! \n`);
+console.log(`\ncreate-prompt – your daily prompt framework! \n`);
 askForLastThing();

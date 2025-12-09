@@ -35,10 +35,9 @@ p
 ```
 
 Asks you:
-1. What's the last thing you did?
-2. Prompt name/title
-3. Tags (optional, comma-separated)
-4. Task/goal (optional)
+1. Prompt name/title
+2. Tags (optional, comma-separated)
+3. Task/goal (optional)
 
 Then auto-fills:
 - Date
