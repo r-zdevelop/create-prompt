@@ -173,7 +173,7 @@ function createLatestCommitFile(whatUserDid, changesTable, gitStatus) {
 
 **Date:** ${timestamp}
 
-## What I Did
+## The last thing done
 ${whatUserDid}
 `;
 
@@ -222,7 +222,7 @@ function updateBasePromptWithCommit(whatUserDid, changesTable) {
 
 **Date:** ${timestamp}
 
-### What I Did
+### The last thing done
 ${whatUserDid}
 `;
 
@@ -288,6 +288,35 @@ ${changesTable}
 }
 
 /**
+ * Build full formatted commit message
+ * @param {string} whatUserDid - What the user did in the directory
+ * @param {string} changesTable - Changes table
+ * @returns {string} Formatted commit message
+ */
+function buildCommitMessage(whatUserDid, changesTable) {
+  const timestamp = new Date().toISOString();
+
+  let message = `## Latest Commit
+
+**Date:** ${timestamp}
+
+### The last thing done
+${whatUserDid}
+`;
+
+  // Add Changes section if table is provided
+  if (changesTable && changesTable.trim()) {
+    message += `
+### Changes
+
+${changesTable}
+`;
+  }
+
+  return message;
+}
+
+/**
  * Finish command - handles the complete workflow
  */
 async function finishCommand() {
@@ -321,9 +350,9 @@ async function finishCommand() {
     // Step 5: Update base_prompt.md with latest commit section
     updateBasePromptWithCommit(whatUserDid, changesTable);
 
-    // Step 6: Perform the commit
+    // Step 6: Perform the commit with full formatted message
     console.log('\n💾 Creating git commit...');
-    const commitMessage = whatUserDid;
+    const commitMessage = buildCommitMessage(whatUserDid, changesTable);
     const success = performGitCommit(commitMessage);
 
     if (success) {
