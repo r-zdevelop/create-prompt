@@ -12,13 +12,51 @@ function parseArguments(args) {
   const command = args[0];
 
   return {
+    help: args.includes('--help') || args.includes('-h') || command === 'help',
     quick: args.includes('--quick') || args.includes('-q'),
     noHistory: args.includes('--no-history'),
     projectStructure: args.includes('--project-structure') || command === 'project-structure' || command === 'ps',
     filesMarkdown: args.includes('--files-markdown') || command === 'files-markdown' || command === 'fm',
-    finish: args.includes('finish'),
+    finish: args.includes('finish') || command === 'finish' || command === 'f',
     command: command // First argument as command
   };
+}
+
+/**
+ * Display help information
+ * @param {string} version - CLI version
+ */
+function displayHelp(version) {
+  console.log(`
+create-prompt v${version}
+Your daily prompt framework - creates organized AI prompts with smart auto-filling and context detection.
+
+USAGE:
+  p [options]                    Create a new prompt (interactive mode)
+  p <command>                    Run a specific command
+
+COMMANDS:
+  finish, f                      Finish and save the current prompt
+  project-structure, ps          Generate project structure tree
+  files-markdown, fm             Generate markdown file with project files
+  help                           Show this help message
+
+OPTIONS:
+  --quick, -q                    Quick mode (skip auto-detection)
+  --no-history                   Don't show recent prompts
+  --help, -h                     Show this help message
+
+EXAMPLES:
+  p                              Start interactive prompt creation
+  p --quick                      Create prompt in quick mode
+  p finish                       Finish current prompt
+  p f                            Finish current prompt (alias)
+  p ps                           Generate project structure
+  p fm                           Generate files markdown
+  p --help                       Show this help
+
+For more information, visit: https://github.com/r-zdevelop/create-prompt
+`);
 }
 
 /**
@@ -51,6 +89,12 @@ class CLI {
    */
   async run(args) {
     const options = parseArguments(args);
+
+    // Handle help command
+    if (options.help) {
+      displayHelp(this.version);
+      return;
+    }
 
     // Handle 'finish' command
     if (options.command === 'finish' || options.finish) {

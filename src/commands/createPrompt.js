@@ -14,19 +14,15 @@ async function collectUserInput(options) {
   };
 
   try {
-    // Ask for task/goal (mandatory)
-    data.task = await input.askWithValidation(
-      config.PROMPTS.TASK,
-      (answer) => answer ? null : 'Please provide what you want to accomplish',
-      'Please provide what you want to accomplish'
-    );
-
-    // Ask for prompt name
+    // Ask for prompt name (title) - mandatory
     data.promptName = await input.askWithValidation(
       config.PROMPTS.PROMPT_NAME,
       (answer) => answer ? null : config.VALIDATION.EMPTY_PROMPT_NAME,
       config.VALIDATION.EMPTY_PROMPT_NAME
     );
+
+    // Ask for task/goal (optional)
+    data.task = await input.ask(config.PROMPTS.TASK);
 
     // Ask for tags (skip in quick mode)
     if (!options.quick) {
@@ -35,8 +31,7 @@ async function collectUserInput(options) {
       data.tags = [];
     }
 
-    // Set lastThing based on task for history tracking
-    data.lastThing = data.task;
+    // Don't add anything to history section (lastThing is not set)
 
     return data;
   } finally {

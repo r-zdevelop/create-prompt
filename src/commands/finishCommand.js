@@ -169,12 +169,9 @@ function createLatestCommitFile(whatUserDid, changesTable, gitStatus) {
   const latestCommitPath = path.join(promptsDir, 'latest_commit.md');
   const timestamp = new Date().toISOString();
 
-  let content = `# Latest Commit
+  let content = `# ${whatUserDid}
 
 **Date:** ${timestamp}
-
-## The last thing done
-${whatUserDid}
 `;
 
   // Add Changes section if table is provided
@@ -296,12 +293,9 @@ ${changesTable}
 function buildCommitMessage(whatUserDid, changesTable) {
   const timestamp = new Date().toISOString();
 
-  let message = `## Latest Commit
+  let message = `## ${whatUserDid}
 
 **Date:** ${timestamp}
-
-### The last thing done
-${whatUserDid}
 `;
 
   // Add Changes section if table is provided
