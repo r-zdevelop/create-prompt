@@ -153,23 +153,30 @@ function performGitCommit(message) {
 }
 
 /**
- * Create or replace latest_commit.md file
+ * Create or replace latest_commit.md file in .mcp/context/
  * @param {string} whatUserDid - What the user did in the directory
  * @param {string} changesTable - Changes table
  * @param {string} gitStatus - Git status output
  */
 function createLatestCommitFile(whatUserDid, changesTable, gitStatus) {
   const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
+  const contextDir = path.join(promptsDir, 'context');
 
-  // Ensure .mcp directory exists
-  if (!fs.existsSync(promptsDir)) {
-    fs.mkdirSync(promptsDir, { recursive: true });
+  // Ensure .mcp/context directory exists
+  if (!fs.existsSync(contextDir)) {
+    fs.mkdirSync(contextDir, { recursive: true });
   }
 
-  const latestCommitPath = path.join(promptsDir, 'latest_commit.md');
+  const latestCommitPath = path.join(contextDir, 'latest_commit.md');
   const timestamp = new Date().toISOString();
 
-  let content = `# ${whatUserDid}
+  let content = `---
+type: commit
+priority: medium
+tags: [git, changes]
+---
+
+# ${whatUserDid}
 
 **Date:** ${timestamp}
 `;

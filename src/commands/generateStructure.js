@@ -82,16 +82,27 @@ function generateStructure() {
 
   const tree = getProjectStructureString();
 
-  // Ensure .mcp directory exists
+  // Ensure .mcp/context directory exists
   const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
-  if (!fs.existsSync(promptsDir)) {
-    fs.mkdirSync(promptsDir, { recursive: true });
+  const contextDir = path.join(promptsDir, 'context');
+  if (!fs.existsSync(contextDir)) {
+    fs.mkdirSync(contextDir, { recursive: true });
   }
 
-  // Save to .mcp/project_structure.md
+  // Save to .mcp/context/project_structure.md with YAML frontmatter
   const filename = 'project_structure.md';
-  const filePath = path.join(promptsDir, filename);
-  const content = `# Project Structure\n\n\`\`\`\n${tree}\`\`\`\n`;
+  const filePath = path.join(contextDir, filename);
+  const content = `---
+type: structure
+priority: medium
+tags: [architecture, files]
+---
+
+# Project Structure
+
+\`\`\`
+${tree}\`\`\`
+`;
 
   fs.writeFileSync(filePath, content);
 
