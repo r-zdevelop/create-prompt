@@ -51,7 +51,7 @@ function ensureIgnoreFilesExists() {
   const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
   const ignoreFilesPath = path.join(promptsDir, 'ignore_files.txt');
 
-  // Ensure .prompts directory exists
+  // Ensure .mcp directory exists
   if (!fs.existsSync(promptsDir)) {
     fs.mkdirSync(promptsDir, { recursive: true });
   }
@@ -82,13 +82,13 @@ function generateStructure() {
 
   const tree = getProjectStructureString();
 
-  // Ensure .prompts directory exists
+  // Ensure .mcp directory exists
   const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
   if (!fs.existsSync(promptsDir)) {
     fs.mkdirSync(promptsDir, { recursive: true });
   }
 
-  // Save to .prompts/project_structure.md
+  // Save to .mcp/project_structure.md
   const filename = 'project_structure.md';
   const filePath = path.join(promptsDir, filename);
   const content = `# Project Structure\n\n\`\`\`\n${tree}\`\`\`\n`;

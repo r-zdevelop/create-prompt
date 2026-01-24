@@ -1,0 +1,28 @@
+{
+  "name": "base",
+  "version": "1.0",
+  "description": "Base template for general prompts",
+  "sections": {
+    "header": {
+      "template": "# Task: {{intent.action}} {{intent.subject}}",
+      "priority": 1
+    },
+    "context": {
+      "template": "## Context\n\n{{context}}",
+      "priority": 2,
+      "conditional": "includeContext"
+    },
+    "requirements": {
+      "template": "## Requirements\n\n{{requirements}}",
+      "priority": 3
+    },
+    "constraints": {
+      "template": "## Constraints\n\n- Follow existing codebase patterns\n- Include error handling\n- Write clean, maintainable code",
+      "priority": 4
+    },
+    "output": {
+      "template": "## Expected Output\n\nProvide a complete, production-ready implementation.",
+      "priority": 5
+    }
+  }
+}

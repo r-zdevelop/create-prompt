@@ -9,7 +9,7 @@ function ensureRequestedFilesExists() {
   const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
   const requestedFilesPath = path.join(promptsDir, 'requested_files.txt');
 
-  // Ensure .prompts directory exists
+  // Ensure .mcp directory exists
   if (!fs.existsSync(promptsDir)) {
     fs.mkdirSync(promptsDir, { recursive: true });
   }

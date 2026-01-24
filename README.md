@@ -1,17 +1,15 @@
 # create-prompt
 
-> Your daily prompt framework - organized AI prompts with smart auto-filling and git workflow integration
+> Your daily prompt framework - organized AI prompts with smart auto-filling, context detection, and MCP support
 
 ## Features
 
-- **Smart Mode** (default): Asks for tags, task, and auto-fills context from your project
-- **Quick Mode** (`--quick` or `-q`): Minimal questions, fast prompt creation
-- **Finish Command**: Complete your work with structured commit tracking and file change documentation
+- **MCP Context System**: Define personas, standards, schemas, and project context for AI-optimized prompts
+- **Enhance Command**: Generate contextualized prompts from casual intents
+- **Multi-LLM Support**: Optimize prompts for Claude, Cursor, GPT, and more
 - **Project Structure Generation**: Auto-generates project tree with customizable ignore patterns
+- **Git Workflow Integration**: Structured commit tracking with file change documentation
 - **Auto-detection**: Reads package.json to fill tools, versions, and environment
-- **History Tracking**: Keeps track of what you've been working on
-- **Date & Counter**: Automatic YYYYMMDD_NN naming
-- **Git Integration**: Automatically adds `.prompts` to `.gitignore` (if file exists)
 
 ## Installation
 
@@ -25,167 +23,213 @@ Or use the short alias:
 p
 ```
 
-## Usage
+## Quick Start
 
-### Smart Mode (default)
 ```bash
-create-prompt
-# or
-p
+# 1. Initialize the MCP context system
+p init
+
+# 2. Edit your context files
+#    .mcp/context/persona.md      - Define your AI persona
+#    .mcp/context/standards.md    - Your coding standards
+#    .mcp/context/instructions.md - Behavior rules
+
+# 3. Generate contextual prompts
+p e "create a login form with validation"
 ```
 
-Asks you:
-1. Prompt name/title
-2. Tags (optional, comma-separated)
-3. Task/goal (optional)
+---
 
-Then auto-fills:
-- Date
-- Environment (OS)
-- Tools (from package.json)
-- Project structure
-- History
+## MCP Context System
 
-### Quick Mode
+The MCP (Model Context Protocol) system lets you define reusable context for generating optimized prompts.
+
+### Initialize MCP
+
 ```bash
-create-prompt --quick
-# or
-p -q
+p init    # or: p mi
 ```
 
-Only asks the essential questions (last thing + prompt name).
+Creates the `.mcp` directory structure:
 
-### Skip History Question
+```
+.mcp/
+├── prompts/              # Prompt templates (JSON)
+│   ├── base.json
+│   ├── ui.json
+│   └── api.json
+├── context/              # Project context (Markdown)
+│   ├── persona.md        # AI persona definition
+│   ├── standards.md      # Coding standards
+│   ├── instructions.md   # Behavior rules
+│   ├── project_structure.md
+│   ├── history.md
+│   └── latest_commit.md
+├── schemas/              # Variable schemas (JSON/YAML)
+│   └── colors.yaml
+└── config.json           # MCP configuration
+```
+
+### Generate Contextual Prompts
+
 ```bash
-create-prompt --no-history
-# or combine with quick mode
+p enhance "create a signup button with primary color"
+# or
+p e "add user authentication API"
+```
+
+The `enhance` command:
+1. Parses your casual intent
+2. Loads relevant context from `.mcp/context/`
+3. Resolves variables from `.mcp/schemas/`
+4. Selects appropriate template from `.mcp/prompts/`
+5. Generates an optimized, contextualized prompt
+
+**Options:**
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--template` | `-t` | Use specific template (ui, api, base) |
+| `--target` | `-T` | Target LLM (claude, cursor, gpt) |
+| `--output` | `-o` | Save to file |
+| `--interactive` | `-i` | Interactive mode |
+| `--dry-run` | `-d` | Preview without generating |
+| `--no-context` | - | Exclude context files |
+| `--verbose` | `-V` | Show detailed output |
+| `--copy` | - | Copy to clipboard |
+
+**Examples:**
+```bash
+p e "create modal component" --template ui
+p e "add REST endpoint" --template api --target cursor
+p e "refactor auth service" --output prompt.md --verbose
+```
+
+### Validate & List MCP Resources
+
+```bash
+p mcp-validate    # or: p mv - Check for errors
+p mcp-list        # or: p ml - List all resources
+p ml templates    # List only templates
+p ml schemas -v   # List schemas with details
+```
+
+---
+
+## Project Commands
+
+### Generate Project Structure
+
+```bash
+p project-structure    # or: p ps
+```
+
+Generates `.mcp/project_structure.md` with your directory tree.
+
+**Custom ignore patterns** - Create `.mcp/ignore_files.txt`:
+```txt
+public/images
+public/css
+*.log
+dist/
+```
+
+### Generate Files Markdown
+
+```bash
+p files-markdown    # or: p fm
+```
+
+Aggregates file contents into `.mcp/requested_files.md`.
+
+**Setup** - Create `.mcp/requested_files.txt`:
+```txt
+src/index.js
+src/components/Header.jsx
+README.md
+```
+
+---
+
+## Git Workflow
+
+### Finish Your Work
+
+```bash
+p finish    # or: p f
+```
+
+Complete your work session:
+1. Describe what you did
+2. Review git status
+3. Add file-by-file descriptions (optional)
+4. Auto-generates `.mcp/latest_commit.md`
+5. Updates `.mcp/context/history.md`
+6. Performs git commit
+
+---
+
+## Legacy Prompt Creation
+
+For quick, standalone prompts without MCP context:
+
+```bash
+p              # Smart mode - asks for tags, task
+p --quick      # Quick mode - minimal questions
 p -q --no-history
 ```
 
-Skips the history question and sets it to "N/A". Useful when you want to jump straight to creating prompts.
+Creates individual prompt files: `.mcp/YYYYMMDD_NN_slug.md`
 
-### Finish Your Work
-```bash
-create-prompt finish
-# or
-p finish
-```
-
-Complete your work session with an organized workflow:
-1. Asks what you did (mandatory)
-2. Shows git status
-3. Asks for file-by-file change descriptions (press Enter 3 times to skip)
-4. Creates/updates `.prompts/latest_commit.md` with detailed changes
-5. Updates `.prompts/base_prompt.md` with latest commit info
-6. Performs git commit automatically
-
-**File descriptions:**
-- If you provide a description: it's added to the table
-- If you press Enter: adds "No description provided" to the table
-- Press Enter 3 times in a row: finishes and commits
-
-### Generate Project Structure
-```bash
-create-prompt project-structure
-# or shortcut
-p ps
-```
-
-Creates `.prompts/project_structure.md` with your project tree and updates `.prompts/base_prompt.md`.
-
-**Customizable ignore patterns:**
-- Respects `.gitignore` patterns
-- Create `.prompts/ignore_files.txt` to add custom ignore patterns:
-  ```txt
-  public/images
-  public/css
-  *.log
-  dist/
-  ```
-
-### Generate Files Markdown
-```bash
-create-prompt files-markdown
-# or shortcut
-p fm
-```
-
-Creates `.prompts/requested_files.md` containing the content of files listed in `.prompts/requested_files.txt`. Perfect for sharing multiple files with AI tools or for documentation purposes.
-
-**How it works:**
-- Create/edit `.prompts/requested_files.txt` with file paths (one per line)
-- Run `p fm` to generate the markdown output
-- Example `requested_files.txt`:
-  ```txt
-  src/index.js
-  src/components/Header.jsx
-  README.md
-  ```
-
-## Generated Files
-
-The tool creates a `.prompts` directory in your project with:
-
-- **`base_prompt.md`** - Your base template (auto-updated with project structure, history, and latest commit)
-- **`YYYYMMDD_NN_slug.md`** - Individual prompts created with `p` command
-- **`latest_commit.md`** - Most recent commit details with file changes table
-- **`project_structure.md`** - Current project structure tree
-- **`ignore_files.txt`** - Custom patterns to ignore in project structure (optional)
-- **`requested_files.txt`** - List of file paths to include in markdown output (optional)
-- **`requested_files.md`** - Generated markdown with file contents
-
-## Template Customization
-
-Edit `.prompts/base_prompt.md` to customize your prompt template. Changes will apply to all new prompts.
-
-## Project Structure
-
-```
-create-prompt/
-├── bin/
-│   └── create-prompt
-├── templates/
-│   └── base_prompt.md
-├── package.json
-└── README.md
-```
+---
 
 ## Quick Reference
 
 | Command | Shortcut | Description |
 |---------|----------|-------------|
-| `create-prompt` | `p` | Create a new prompt (smart mode) |
-| `create-prompt --quick` | `p -q` | Create a new prompt (quick mode) |
-| `create-prompt --no-history` | - | Skip history question |
-| `create-prompt finish` | `p finish` | Finish work, create commit with file tracking |
-| `create-prompt project-structure` | `p ps` | Generate project structure |
-| `create-prompt files-markdown` | `p fm` | Generate markdown from file list |
+| `p init` | `p mi` | Initialize MCP context system |
+| `p enhance <intent>` | `p e` | Generate contextual prompt |
+| `p mcp-validate` | `p mv` | Validate MCP configuration |
+| `p mcp-list` | `p ml` | List MCP resources |
+| `p project-structure` | `p ps` | Generate project structure |
+| `p files-markdown` | `p fm` | Generate markdown from file list |
+| `p finish` | `p f` | Finish work with git commit |
+| `p` | - | Create standalone prompt |
+| `p --quick` | `p -q` | Quick prompt creation |
+
+---
 
 ## Workflow Example
 
 ```bash
-# 1. Start your work session
-p
+# Initial setup (once per project)
+p init                            # Initialize MCP
+# Edit .mcp/context/persona.md with your AI persona
+# Edit .mcp/context/standards.md with your standards
 
-# 2. Work on your code...
+# Daily workflow
+p ps                              # Update project structure
+p e "implement user dashboard"    # Generate contextual prompt
 
-# 3. Generate updated project structure
-p ps
+# ... do your work ...
 
-# 4. Generate markdown from specific files
-p fm
-
-# 5. Finish and commit with detailed tracking
-p finish
+p f                               # Finish and commit
 ```
 
-## Roadmap (Prompt Framework Vision)
+---
 
-- [ ] Profile presets (coding, architecture, debugging)
-- [ ] Custom placeholders via config file
-- [ ] Integration with AI tools
-- [ ] Prompt versioning
-- [ ] Search/filter prompts by tags
+## Programmatic API
+
+```javascript
+const { mcp } = require('create-prompt');
+
+const result = await mcp.generatePrompt(
+  "create a signup form",
+  { template: "ui", target: "claude" }
+);
+
+console.log(result.prompt);
+```
 
 ## License
 

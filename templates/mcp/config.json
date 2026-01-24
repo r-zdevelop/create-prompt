@@ -1,0 +1,22 @@
+{
+  "$schema": "https://create-prompt.dev/schemas/config.json",
+  "version": "1.0",
+  "defaults": {
+    "template": "base",
+    "target": "claude",
+    "includeContext": true,
+    "format": "markdown"
+  },
+  "context": {
+    "autoLoad": ["persona", "standards", "instructions", "project_structure"],
+    "exclude": ["drafts/*"]
+  },
+  "schemas": {
+    "autoResolve": true,
+    "strictValidation": false
+  },
+  "output": {
+    "directory": ".mcp",
+    "filenamePattern": "{{date}}_{{template}}_{{slug}}.md"
+  }
+}

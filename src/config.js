@@ -5,7 +5,7 @@ const path = require('path');
  */
 module.exports = {
   // Directory and file paths
-  PROMPT_DIR: '.prompts',
+  PROMPT_DIR: '.mcp',
   BASE_TEMPLATE_NAME: 'base_prompt.md',
 
   // Template paths (relative to package root)
@@ -22,10 +22,43 @@ module.exports = {
   },
 
   // Files and directories to always ignore
-  ALWAYS_IGNORE: ['node_modules', '.git', '.DS_Store', 'vendor', '.prompts'],
+  ALWAYS_IGNORE: ['node_modules', '.git', '.DS_Store', 'vendor', '.mcp'],
 
   // Version
-  VERSION: '1.2.0',
+  VERSION: '1.5.0',
+
+  // MCP Configuration
+  MCP: {
+    DIR: '.mcp',
+    PROMPTS_SUBDIR: 'prompts',
+    CONTEXT_SUBDIR: 'context',
+    SCHEMAS_SUBDIR: 'schemas',
+    CONFIG_FILE: 'config.json',
+
+    DEFAULT_TEMPLATE: 'base',
+    DEFAULT_TARGET: 'claude',
+
+    SUPPORTED_SCHEMA_FORMATS: ['.json', '.yaml', '.yml'],
+    SUPPORTED_CONTEXT_FORMATS: ['.md', '.txt'],
+    SUPPORTED_TEMPLATE_FORMAT: '.json',
+
+    TARGETS: {
+      claude: { name: 'Claude', maxTokens: 200000 },
+      cursor: { name: 'Cursor', maxTokens: 128000 },
+      gpt: { name: 'GPT-4', maxTokens: 128000 },
+      antigravity: { name: 'Antigravity', maxTokens: 100000 },
+      generic: { name: 'Generic', maxTokens: null }
+    },
+
+    MESSAGES: {
+      NOT_INITIALIZED: 'MCP not initialized. Run `create-prompt mcp-init` first.',
+      TEMPLATE_NOT_FOUND: (name) => `Template "${name}" not found, using "base".`,
+      SCHEMA_ERROR: (file, error) => `Schema error in ${file}: ${error}`,
+      CONTEXT_NOT_FOUND: (file) => `Context file "${file}" not found, skipping.`,
+      PROMPT_GENERATED: 'Prompt generated successfully!',
+      VALIDATION_FAILED: (count) => `Validation failed with ${count} error(s).`
+    }
+  },
 
   // CLI messages
   MESSAGES: {
@@ -33,7 +66,7 @@ module.exports = {
     PROMPT_CREATED: '\n✨ Prompt created! \n',
     BASE_COPIED: 'base_prompt.md copied to your project',
     BASE_COPIED_WITH_STRUCTURE: 'base_prompt.md copied to your project with auto-generated structure',
-    GITIGNORE_UPDATED: '.prompts added to .gitignore',
+    GITIGNORE_UPDATED: '.mcp added to .gitignore',
     STRUCTURE_GENERATED: (filename) => `Project structure saved to ${filename}`,
   },
 

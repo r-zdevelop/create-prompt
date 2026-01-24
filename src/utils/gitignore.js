@@ -3,7 +3,7 @@ const path = require('path');
 const config = require('../config');
 
 /**
- * Parse .prompts/ignore_files.txt and return additional ignore patterns
+ * Parse .mcp/ignore_files.txt and return additional ignore patterns
  * @returns {string[]} Array of ignore patterns
  */
 function parseIgnoreFiles() {
@@ -41,7 +41,7 @@ function parseGitignore() {
     ignorePatterns.push(...lines);
   }
 
-  // Add patterns from .prompts/ignore_files.txt
+  // Add patterns from .mcp/ignore_files.txt
   ignorePatterns.push(...parseIgnoreFiles());
 
   return ignorePatterns;
@@ -90,10 +90,10 @@ function shouldIgnore(itemPath, ignorePatterns) {
 }
 
 /**
- * Add .prompts to .gitignore if not already present
+ * Add .mcp to .gitignore if not already present
  * @returns {boolean} True if added, false if already present
  */
-function ensurePromptsInGitignore() {
+function ensureMcpInGitignore() {
   const gitignorePath = path.join(process.cwd(), '.gitignore');
 
   if (!fs.existsSync(gitignorePath)) {
@@ -103,15 +103,15 @@ function ensurePromptsInGitignore() {
   const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
   const lines = gitignoreContent.split('\n');
 
-  const hasPromptsEntry = lines.some(line => {
+  const hasMcpEntry = lines.some(line => {
     const trimmed = line.trim();
-    return trimmed === '.prompts' || trimmed === '.prompts/' || trimmed === '/.prompts';
+    return trimmed === '.mcp' || trimmed === '.mcp/' || trimmed === '/.mcp';
   });
 
-  if (!hasPromptsEntry) {
+  if (!hasMcpEntry) {
     const newContent = gitignoreContent.endsWith('\n')
-      ? gitignoreContent + '.prompts\n'
-      : gitignoreContent + '\n.prompts\n';
+      ? gitignoreContent + '.mcp\n'
+      : gitignoreContent + '\n.mcp\n';
 
     fs.writeFileSync(gitignorePath, newContent);
     return true;
@@ -120,9 +120,13 @@ function ensurePromptsInGitignore() {
   return false;
 }
 
+// Keep old name for backwards compatibility
+const ensurePromptsInGitignore = ensureMcpInGitignore;
+
 module.exports = {
   parseGitignore,
   parseIgnoreFiles,
   shouldIgnore,
+  ensureMcpInGitignore,
   ensurePromptsInGitignore
 };

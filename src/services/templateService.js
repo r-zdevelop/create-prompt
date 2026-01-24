@@ -6,10 +6,10 @@ const { getProjectStructureString } = require('../utils/tree');
 
 /**
  * Initialize base template in project
- * Creates .prompts directory and copies base template with auto-filled structure
+ * Creates .mcp directory and copies base template with auto-filled structure
  */
 function initializeBaseTemplate() {
-  // Create .prompts directory
+  // Create .mcp directory
   const promptDir = path.join(process.cwd(), config.PROMPT_DIR);
   if (!fs.existsSync(promptDir)) {
     fs.mkdirSync(promptDir, { recursive: true });

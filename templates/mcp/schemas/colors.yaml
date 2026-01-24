@@ -1,0 +1,33 @@
+name: colors
+version: "1.0"
+description: Brand color palette
+
+variables:
+  primary:
+    type: color
+    value: "#3B82F6"
+    description: Primary brand color
+  secondary:
+    type: color
+    value: "#10B981"
+    description: Secondary accent color
+  accent:
+    type: color
+    value: "#F59E0B"
+    description: Accent/highlight color
+  background:
+    type: color
+    value: "#F9FAFB"
+    description: Background color
+  text:
+    type: color
+    value: "#1F2937"
+    description: Main text color
+  error:
+    type: color
+    value: "#EF4444"
+    description: Error state color
+  success:
+    type: color
+    value: "#22C55E"
+    description: Success state color

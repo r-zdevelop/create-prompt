@@ -161,7 +161,7 @@ function performGitCommit(message) {
 function createLatestCommitFile(whatUserDid, changesTable, gitStatus) {
   const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
 
-  // Ensure .prompts directory exists
+  // Ensure .mcp directory exists
   if (!fs.existsSync(promptsDir)) {
     fs.mkdirSync(promptsDir, { recursive: true });
   }

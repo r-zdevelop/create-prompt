@@ -1,0 +1,17 @@
+{
+  "name": "api",
+  "version": "1.0",
+  "description": "Template for API endpoint generation",
+  "extends": "base",
+  "tags": ["api", "backend", "endpoint"],
+  "sections": {
+    "api_spec": {
+      "template": "## API Specification\n\n- Endpoint: {{path}}\n- Method: {{method}}\n- Authentication: {{auth}}",
+      "priority": 2.5
+    },
+    "constraints": {
+      "template": "## Technical Constraints\n\n- Follow REST conventions\n- Include proper error handling with appropriate HTTP status codes\n- Validate all inputs\n- Document request/response schemas\n- Include rate limiting considerations",
+      "priority": 4
+    }
+  }
+}

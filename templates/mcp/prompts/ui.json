@@ -1,0 +1,21 @@
+{
+  "name": "ui",
+  "version": "1.0",
+  "description": "Template for UI component generation",
+  "extends": "base",
+  "tags": ["ui", "frontend", "component"],
+  "variables": {
+    "framework": { "default": "react" },
+    "styling": { "default": "tailwind" }
+  },
+  "sections": {
+    "design": {
+      "template": "## Design Specifications\n\n{{#if schema.colors}}- Primary: {{schema.colors.primary}}\n- Secondary: {{schema.colors.secondary}}{{/if}}\n{{#if schema.specs}}\n### UI Specs\n- Border Radius: {{schema.specs.borderRadius}}\n- Spacing: Use project spacing scale{{/if}}",
+      "priority": 2.5
+    },
+    "constraints": {
+      "template": "## Technical Constraints\n\n- Must be accessible (WCAG 2.1 AA)\n- Must be responsive\n- Follow existing component patterns\n- Use semantic HTML elements",
+      "priority": 4
+    }
+  }
+}
