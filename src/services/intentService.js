@@ -310,9 +310,12 @@ function inferContext(parsedIntent, contextFiles) {
   const available = Object.keys(contextFiles);
   const recommended = [];
 
-  // Always recommend project overview if available
-  if (available.includes('project')) {
-    recommended.push('project');
+  // Default context files to always include if available
+  const defaultContextFiles = ['project', 'project_structure', 'persona', 'standards'];
+  for (const defaultFile of defaultContextFiles) {
+    if (available.includes(defaultFile) && !recommended.includes(defaultFile)) {
+      recommended.push(defaultFile);
+    }
   }
 
   // Add context based on hints
@@ -327,6 +330,11 @@ function inferContext(parsedIntent, contextFiles) {
     if (available.includes(type) && !recommended.includes(type)) {
       recommended.push(type);
     }
+  }
+
+  // Include latest_commit if available (useful for continuity)
+  if (available.includes('latest_commit') && !recommended.includes('latest_commit')) {
+    recommended.push('latest_commit');
   }
 
   return recommended;

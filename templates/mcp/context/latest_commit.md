@@ -6,12 +6,11 @@ tags: [git, changes]
 
 # Latest Commit
 
+**[DESCRIPTION]**
+
 **Date:** [DATE]
 
-### The last thing done
-[DESCRIPTION]
-
-### Changes
+## Changes
 
 | File | Type | Changes |
 |------|------|---------|

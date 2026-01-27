@@ -176,15 +176,35 @@ async function enhance(args) {
 
     // Output handling
     if (options.output) {
-      // Write to file
+      // Write to specified file
       const outputPath = path.resolve(options.output);
       fs.writeFileSync(outputPath, result.prompt, 'utf-8');
       console.log(`✅ Prompt saved to: ${outputPath}`);
     } else {
-      // Output to console
+      // Save to .mcp/results/ by default
+      const mcpDir = path.join(process.cwd(), '.mcp');
+      const resultsDir = path.join(mcpDir, 'results');
+
+      if (!fs.existsSync(resultsDir)) {
+        fs.mkdirSync(resultsDir, { recursive: true });
+      }
+
+      // Generate filename from intent
+      const slug = intent.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 50);
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `${timestamp}-${slug || 'prompt'}.md`;
+      const outputPath = path.join(resultsDir, filename);
+
+      fs.writeFileSync(outputPath, result.prompt, 'utf-8');
+
+      // Output to console as well
       console.log('─'.repeat(60));
       console.log(result.prompt);
       console.log('─'.repeat(60));
+      console.log(`\n📁 Saved to: ${outputPath}`);
     }
 
     // Show metadata

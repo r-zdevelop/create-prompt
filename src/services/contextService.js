@@ -202,10 +202,57 @@ function getContextSummary(contextFiles) {
   }));
 }
 
+/**
+ * Rebuild base_prompt.md from all context files
+ * @param {string} mcpRoot - Path to .mcp directory
+ */
+function rebuildBasePrompt(mcpRoot = '.mcp') {
+  const fs = require('fs');
+  const basePromptPath = path.join(mcpRoot, 'base_prompt.md');
+
+  // Load all context files
+  const contextResult = loadContext(mcpRoot);
+  const files = Object.values(contextResult.files);
+
+  if (files.length === 0) {
+    console.log('⚠️  No context files found, skipping base_prompt.md update');
+    return;
+  }
+
+  // Sort by priority (high first)
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  files.sort((a, b) => {
+    const aPriority = priorityOrder[a.meta.priority] ?? 1;
+    const bPriority = priorityOrder[b.meta.priority] ?? 1;
+    return aPriority - bPriority;
+  });
+
+  // Build content from context files
+  const sections = [];
+
+  for (const file of files) {
+    // Convert # headers to ## in content
+    let content = file.content;
+    content = content.replace(/^# /gm, '## ');
+    sections.push(content);
+    sections.push('');
+  }
+
+  // Add Task section at the end
+  sections.push('---\n');
+  sections.push('## Task\n');
+  sections.push('[SPECIFIC USER REQUEST/GOAL - This is what the user wants to achieve]');
+
+  const content = sections.join('\n');
+  fs.writeFileSync(basePromptPath, content);
+  console.log(`✅ Updated: ${basePromptPath}`);
+}
+
 module.exports = {
   loadContext,
   loadContextFile,
   parseContextMeta,
   selectRelevantContext,
-  getContextSummary
+  getContextSummary,
+  rebuildBasePrompt
 };
