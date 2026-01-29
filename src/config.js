@@ -27,6 +27,25 @@ module.exports = {
   // Version
   VERSION: '1.5.0',
 
+  // Relevance Filtering Configuration
+  RELEVANCE: {
+    MIN_SCORE: 0.3,                    // Minimum score to include content
+    INCLUDE_LATEST_COMMIT: 'auto',     // 'always', 'auto', 'never'
+    INCLUDE_HISTORY: 'auto',           // 'always', 'auto', 'never'
+    MAX_HISTORY_ITEMS: 5,              // Maximum history entries to include
+    MAX_STRUCTURE_FILES: 50,           // Maximum files in focused structure
+    ESSENTIAL_CONTEXT: ['persona', 'standards', 'project'],  // Always include these
+    EXPAND_SYNONYMS: true              // Enable synonym expansion
+  },
+
+  // Task Type Detection Configuration
+  TASK_TYPES: {
+    DETECTION_THRESHOLD: 0.5,          // Minimum confidence to detect type
+    INJECT_REQUIREMENTS: true,         // Auto-inject task requirements
+    SUGGEST_FILES: true,               // Suggest relevant files
+    FOCUS_STRUCTURE: true              // Use focused project structure
+  },
+
   // MCP Configuration
   MCP: {
     DIR: '.mcp',

@@ -11,6 +11,9 @@ const { loadContext, selectRelevantContext } = require('./contextService');
 const { loadSchemas, validateSchema } = require('./schemaService');
 const { parseIntent, matchTemplates, inferContext } = require('./intentService');
 const { buildPrompt } = require('../utils/promptBuilder');
+const { detectTaskType, getTaskRequirements, getRelevantPaths } = require('./taskTypeService');
+const { extractTaskKeywords, filterByRelevance } = require('./relevanceService');
+const config = require('../config');
 
 /**
  * Default MCP configuration
@@ -229,7 +232,11 @@ async function generatePrompt(intentString, options = {}) {
     includeContext = true,
     contextFiles = null,
     variables = {},
-    format = 'markdown'
+    format = 'markdown',
+    // New options for smart filtering
+    filterRelevance = true,
+    injectRequirements = config.TASK_TYPES?.INJECT_REQUIREMENTS ?? true,
+    suggestFiles = config.TASK_TYPES?.SUGGEST_FILES ?? true
   } = options;
 
   const warnings = [];
@@ -249,6 +256,14 @@ async function generatePrompt(intentString, options = {}) {
   // Parse intent
   const parsedIntent = parseIntent(intentString);
 
+  // Detect task type for smart filtering
+  const taskTypeResult = detectTaskType(intentString);
+  const taskType = taskTypeResult.type;
+  const taskConfig = taskTypeResult.config;
+
+  // Extract keywords for relevance scoring
+  const keywords = extractTaskKeywords(intentString);
+
   // Select template
   const selectedTemplate = templateName
     ? mcpContext.prompts[templateName]
@@ -258,7 +273,7 @@ async function generatePrompt(intentString, options = {}) {
     warnings.push(`Template '${templateName}' not found, using first available`);
   }
 
-  // Select relevant context
+  // Select relevant context with smart filtering
   let selectedContext = {};
   if (includeContext) {
     if (contextFiles) {
@@ -271,15 +286,31 @@ async function generatePrompt(intentString, options = {}) {
         }
       }
     } else {
-      // Auto-select relevant context
-      const relevantNames = inferContext(parsedIntent, mcpContext.context);
+      // Auto-select relevant context with filtering
+      const relevantNames = inferContext(parsedIntent, mcpContext.context, {
+        filterByRelevance: filterRelevance,
+        minRelevance: config.RELEVANCE?.MIN_SCORE || 0.3
+      });
       for (const name of relevantNames) {
         selectedContext[name] = mcpContext.context[name];
       }
     }
   }
 
-  // Build prompt
+  // Get task requirements if enabled
+  let taskRequirements = [];
+  if (injectRequirements && taskType !== 'general') {
+    taskRequirements = getTaskRequirements(taskType);
+  }
+
+  // Get file suggestions if enabled
+  let fileSuggestions = [];
+  if (suggestFiles && taskType !== 'general') {
+    const relevantPaths = getRelevantPaths(taskType);
+    fileSuggestions = relevantPaths;
+  }
+
+  // Build prompt with enhanced options
   const result = buildPrompt({
     intent: parsedIntent,
     template: selectedTemplate,
@@ -287,7 +318,13 @@ async function generatePrompt(intentString, options = {}) {
     schemas: mcpContext.schemas,
     target,
     format,
-    includeContext
+    includeContext,
+    // New enhanced options
+    taskType,
+    taskConfig,
+    taskRequirements,
+    fileSuggestions,
+    keywords
   });
 
   warnings.push(...result.warnings);
@@ -302,8 +339,14 @@ async function generatePrompt(intentString, options = {}) {
         types: parsedIntent.types,
         confidence: parsedIntent.confidence
       },
+      taskType: {
+        type: taskType,
+        confidence: taskTypeResult.confidence,
+        name: taskConfig.name
+      },
       contextUsed: Object.keys(selectedContext),
-      schemasUsed: Object.keys(mcpContext.schemas)
+      schemasUsed: Object.keys(mcpContext.schemas),
+      keywords
     },
     warnings
   };

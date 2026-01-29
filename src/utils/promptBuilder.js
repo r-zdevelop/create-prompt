@@ -3,6 +3,7 @@
  *
  * Assembles prompts from context files.
  * Simple structure: # Title, ## Context sections, ## Task
+ * Enhanced with requirements injection and file suggestions.
  */
 
 /**
@@ -15,13 +16,20 @@ function buildPrompt(options) {
     intent,
     context = {},
     target = 'claude',
-    format = 'markdown'
+    format = 'markdown',
+    // New enhanced options
+    taskType = 'general',
+    taskConfig = null,
+    taskRequirements = [],
+    fileSuggestions = null,
+    keywords = []
   } = options;
 
   const warnings = [];
   const metadata = {
     target,
     format,
+    taskType,
     timestamp: new Date().toISOString()
   };
 
@@ -37,7 +45,19 @@ function buildPrompt(options) {
     sections.push(contextContent);
   }
 
-  // 3. Task section at the end with user's request
+  // 3. Requirements section (if applicable)
+  if (taskRequirements && taskRequirements.length > 0) {
+    const requirementsSection = buildRequirementsSection(taskRequirements, taskConfig);
+    sections.push(requirementsSection);
+  }
+
+  // 4. File suggestions section (if applicable)
+  if (fileSuggestions && (fileSuggestions.dirs?.length > 0 || fileSuggestions.files?.length > 0)) {
+    const suggestionsSection = buildFileSuggestionsSection(fileSuggestions, taskConfig);
+    sections.push(suggestionsSection);
+  }
+
+  // 5. Task section at the end with user's request
   const taskSection = buildTaskSection(intent);
   sections.push(taskSection);
 
@@ -138,6 +158,47 @@ function capitalize(str) {
 }
 
 /**
+ * Build requirements section
+ * @param {string[]} requirements - Task-specific requirements
+ * @param {Object} taskConfig - Task type configuration
+ * @returns {string}
+ */
+function buildRequirementsSection(requirements, taskConfig = null) {
+  const taskName = taskConfig?.name || 'Task';
+  const header = `## ${taskName} Requirements`;
+
+  const items = requirements.map(req => `- ${req}`).join('\n');
+
+  return `${header}\n\n${items}`;
+}
+
+/**
+ * Build file suggestions section
+ * @param {{ dirs: string[], files: string[] }} suggestions - File suggestions
+ * @param {Object} taskConfig - Task type configuration
+ * @returns {string}
+ */
+function buildFileSuggestionsSection(suggestions, taskConfig = null) {
+  const parts = [];
+
+  parts.push('## Suggested Files to Examine');
+
+  if (suggestions.dirs && suggestions.dirs.length > 0) {
+    parts.push('\n**Relevant directories:**');
+    const dirList = suggestions.dirs.slice(0, 5).map(dir => `- \`${dir}\``).join('\n');
+    parts.push(dirList);
+  }
+
+  if (suggestions.files && suggestions.files.length > 0) {
+    parts.push('\n**Files to look for:**');
+    const fileList = suggestions.files.slice(0, 8).map(file => `- Files containing: \`${file}\``).join('\n');
+    parts.push(fileList);
+  }
+
+  return parts.join('\n');
+}
+
+/**
  * Estimate token count (rough approximation)
  * @param {string} text - Text to estimate
  * @returns {number}
@@ -149,5 +210,7 @@ function estimateTokens(text) {
 module.exports = {
   buildPrompt,
   formatOutput,
-  estimateTokens
+  estimateTokens,
+  buildRequirementsSection,
+  buildFileSuggestionsSection
 };

@@ -3,7 +3,12 @@
  *
  * Responsible for parsing casual user intents into structured requirements.
  * Matches keywords to templates, schemas, and context.
+ * Integrates with relevance filtering and task type detection.
  */
+
+const { scoreRelevance, extractTaskKeywords, isRelevant } = require('./relevanceService');
+const { detectTaskType, shouldIncludeContext, getContextPriority } = require('./taskTypeService');
+const config = require('../config');
 
 /**
  * Action keywords mapping
@@ -304,40 +309,171 @@ function matchTemplates(parsedIntent, templates) {
  * Infer which context files are needed
  * @param {Object} parsedIntent - Parsed intent
  * @param {Object} contextFiles - Available context files
+ * @param {Object} options - Inference options
  * @returns {string[]} - Recommended context file names
  */
-function inferContext(parsedIntent, contextFiles) {
+function inferContext(parsedIntent, contextFiles, options = {}) {
+  const {
+    filterByRelevance = true,
+    minRelevance = config.RELEVANCE?.MIN_SCORE || 0.3,
+    includeLatestCommit = config.RELEVANCE?.INCLUDE_LATEST_COMMIT || 'auto',
+    includeHistory = config.RELEVANCE?.INCLUDE_HISTORY || 'auto'
+  } = options;
+
   const available = Object.keys(contextFiles);
   const recommended = [];
+  const scores = new Map();
 
-  // Default context files to always include if available
-  const defaultContextFiles = ['project', 'project_structure', 'persona', 'standards'];
-  for (const defaultFile of defaultContextFiles) {
-    if (available.includes(defaultFile) && !recommended.includes(defaultFile)) {
-      recommended.push(defaultFile);
+  // Detect task type
+  const taskTypeResult = detectTaskType(parsedIntent);
+  const taskType = taskTypeResult.type;
+
+  // Extract keywords from intent for relevance scoring
+  const keywords = extractTaskKeywords(parsedIntent.raw || parsedIntent);
+
+  // Get essential context (always include if available)
+  const essentialContext = config.RELEVANCE?.ESSENTIAL_CONTEXT || ['persona', 'standards', 'project'];
+
+  // Add essential context first
+  for (const essential of essentialContext) {
+    if (available.includes(essential) && !recommended.includes(essential)) {
+      recommended.push(essential);
+      scores.set(essential, 1.0); // Max score for essential
     }
+  }
+
+  // Add project_structure (special handling)
+  if (available.includes('project_structure') && !recommended.includes('project_structure')) {
+    recommended.push('project_structure');
+    scores.set('project_structure', 0.9);
   }
 
   // Add context based on hints
   for (const hint of parsedIntent.references.context) {
     if (available.includes(hint) && !recommended.includes(hint)) {
       recommended.push(hint);
+      scores.set(hint, 0.8);
     }
   }
 
-  // Add context based on types
+  // Add context based on detected types
   for (const type of parsedIntent.types) {
     if (available.includes(type) && !recommended.includes(type)) {
       recommended.push(type);
+      scores.set(type, 0.7);
     }
   }
 
-  // Include latest_commit if available (useful for continuity)
+  // Handle latest_commit based on task type and relevance
   if (available.includes('latest_commit') && !recommended.includes('latest_commit')) {
-    recommended.push('latest_commit');
+    const shouldInclude = handleSpecialContext('latest_commit', {
+      contextFiles,
+      keywords,
+      taskType,
+      mode: includeLatestCommit,
+      minRelevance
+    });
+    if (shouldInclude.include) {
+      recommended.push('latest_commit');
+      scores.set('latest_commit', shouldInclude.score);
+    }
   }
 
+  // Handle history based on task type and relevance
+  if (available.includes('history') && !recommended.includes('history')) {
+    const shouldInclude = handleSpecialContext('history', {
+      contextFiles,
+      keywords,
+      taskType,
+      mode: includeHistory,
+      minRelevance
+    });
+    if (shouldInclude.include) {
+      recommended.push('history');
+      scores.set('history', shouldInclude.score);
+    }
+  }
+
+  // Score and filter remaining context files
+  if (filterByRelevance) {
+    for (const name of available) {
+      if (recommended.includes(name)) continue;
+
+      // Check if task type excludes this context
+      if (!shouldIncludeContext(taskType, name)) continue;
+
+      const file = contextFiles[name];
+      const content = file.content || '';
+      const score = scoreRelevance(content, keywords);
+
+      if (score >= minRelevance) {
+        recommended.push(name);
+        scores.set(name, score);
+      }
+    }
+  }
+
+  // Sort by score (highest first), keeping essential at top
+  const essentialSet = new Set(essentialContext);
+  recommended.sort((a, b) => {
+    // Essential context always comes first
+    const aEssential = essentialSet.has(a);
+    const bEssential = essentialSet.has(b);
+    if (aEssential && !bEssential) return -1;
+    if (!aEssential && bEssential) return 1;
+
+    // Then sort by score
+    return (scores.get(b) || 0) - (scores.get(a) || 0);
+  });
+
   return recommended;
+}
+
+/**
+ * Handle special context files (latest_commit, history)
+ * @param {string} contextName - Context file name
+ * @param {Object} options - Options for handling
+ * @returns {{ include: boolean, score: number }}
+ */
+function handleSpecialContext(contextName, options) {
+  const { contextFiles, keywords, taskType, mode, minRelevance } = options;
+
+  // Always include mode
+  if (mode === 'always') {
+    return { include: true, score: 0.5 };
+  }
+
+  // Never include mode
+  if (mode === 'never') {
+    return { include: false, score: 0 };
+  }
+
+  // Auto mode - check task type and relevance
+  // Bug fixes should always include commit history (it's useful for context)
+  if (taskType === 'bugfix') {
+    return { include: true, score: 0.7 };
+  }
+
+  // Check if task type excludes this context
+  if (!shouldIncludeContext(taskType, contextName)) {
+    return { include: false, score: 0 };
+  }
+
+  // Check relevance
+  const file = contextFiles[contextName];
+  if (!file || !file.content) {
+    return { include: false, score: 0 };
+  }
+
+  const score = scoreRelevance(file.content, keywords);
+
+  // Use a lower threshold for history to be more inclusive
+  const effectiveThreshold = contextName === 'history' ? minRelevance * 0.7 : minRelevance;
+
+  return {
+    include: score >= effectiveThreshold,
+    score
+  };
 }
 
 /**
