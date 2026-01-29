@@ -29,8 +29,8 @@ create-prompt/
 │   ├── services/         ← Business logic
 │   ├── utils/            ← Pure utilities
 │   └── config.js         ← All constants
-├── templates/mcp/        ← Bundled templates
-└── .mcp/                 ← Working directory
+├── templates/create-prompt/        ← Bundled templates
+└── .create-prompt/                 ← Working directory
 ```
 
 ## Key Principles

@@ -16,7 +16,7 @@
     "strictValidation": false
   },
   "output": {
-    "directory": ".mcp",
+    "directory": ".create-prompt",
     "filenamePattern": "{{date}}_{{template}}_{{slug}}.md"
   }
 }

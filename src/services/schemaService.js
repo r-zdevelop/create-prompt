@@ -1,7 +1,7 @@
 /**
  * Schema Service
  *
- * Responsible for loading, parsing, and validating schemas from .mcp/schemas.
+ * Responsible for loading, parsing, and validating schemas from .create-prompt/schemas.
  * Supports JSON and YAML formats.
  */
 
@@ -47,11 +47,11 @@ function loadSchema(filePath) {
 }
 
 /**
- * Load all schemas from .mcp/schemas directory
- * @param {string} mcpRoot - Path to .mcp directory
+ * Load all schemas from .create-prompt/schemas directory
+ * @param {string} mcpRoot - Path to .create-prompt directory
  * @returns {{ schemas: Object, errors: string[], warnings: string[] }}
  */
-function loadSchemas(mcpRoot = '.mcp') {
+function loadSchemas(mcpRoot = '.create-prompt') {
   const schemasDir = path.join(mcpRoot, 'schemas');
   const result = { schemas: {}, errors: [], warnings: [] };
 

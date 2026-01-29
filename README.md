@@ -30,9 +30,9 @@ p
 p init
 
 # 2. Edit your context files
-#    .mcp/context/persona.md      - Define your AI persona
-#    .mcp/context/standards.md    - Your coding standards
-#    .mcp/context/instructions.md - Behavior rules
+#    .create-prompt/context/persona.md      - Define your AI persona
+#    .create-prompt/context/standards.md    - Your coding standards
+#    .create-prompt/context/instructions.md - Behavior rules
 
 # 3. Generate contextual prompts
 p e "create a login form with validation"
@@ -50,10 +50,10 @@ The MCP (Model Context Protocol) system lets you define reusable context for gen
 p init    # or: p mi
 ```
 
-Creates the `.mcp` directory structure:
+Creates the `.create-prompt` directory structure:
 
 ```
-.mcp/
+.create-prompt/
 ├── prompts/              # Prompt templates (JSON)
 │   ├── base.json
 │   ├── ui.json
@@ -80,9 +80,9 @@ p e "add user authentication API"
 
 The `enhance` command:
 1. Parses your casual intent
-2. Loads relevant context from `.mcp/context/`
-3. Resolves variables from `.mcp/schemas/`
-4. Selects appropriate template from `.mcp/prompts/`
+2. Loads relevant context from `.create-prompt/context/`
+3. Resolves variables from `.create-prompt/schemas/`
+4. Selects appropriate template from `.create-prompt/prompts/`
 5. Generates an optimized, contextualized prompt
 
 **Options:**
@@ -124,9 +124,9 @@ p ml schemas -v   # List schemas with details
 p project-structure    # or: p ps
 ```
 
-Generates `.mcp/project_structure.md` with your directory tree.
+Generates `.create-prompt/project_structure.md` with your directory tree.
 
-**Custom ignore patterns** - Create `.mcp/ignore_files.txt`:
+**Custom ignore patterns** - Create `.create-prompt/ignore_files.txt`:
 ```txt
 public/images
 public/css
@@ -140,9 +140,9 @@ dist/
 p files-markdown    # or: p fm
 ```
 
-Aggregates file contents into `.mcp/requested_files.md`.
+Aggregates file contents into `.create-prompt/requested_files.md`.
 
-**Setup** - Create `.mcp/requested_files.txt`:
+**Setup** - Create `.create-prompt/requested_files.txt`:
 ```txt
 src/index.js
 src/components/Header.jsx
@@ -163,9 +163,7 @@ Complete your work session:
 1. Describe what you did
 2. Review git status
 3. Add file-by-file descriptions (optional)
-4. Auto-generates `.mcp/latest_commit.md`
-5. Updates `.mcp/context/history.md`
-6. Performs git commit
+4. Performs git commit
 
 ---
 
@@ -179,7 +177,7 @@ p --quick      # Quick mode - minimal questions
 p -q --no-history
 ```
 
-Creates individual prompt files: `.mcp/YYYYMMDD_NN_slug.md`
+Creates individual prompt files: `.create-prompt/YYYYMMDD_NN_slug.md`
 
 ---
 
@@ -204,8 +202,8 @@ Creates individual prompt files: `.mcp/YYYYMMDD_NN_slug.md`
 ```bash
 # Initial setup (once per project)
 p init                            # Initialize MCP
-# Edit .mcp/context/persona.md with your AI persona
-# Edit .mcp/context/standards.md with your standards
+# Edit .create-prompt/context/persona.md with your AI persona
+# Edit .create-prompt/context/standards.md with your standards
 
 # Daily workflow
 p ps                              # Update project structure

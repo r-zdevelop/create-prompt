@@ -39,7 +39,7 @@ async function collectUserInput(options) {
  * Build prompt content from base_prompt.md or context files
  * @param {Object} contextFiles - Loaded context files
  * @param {Object} promptData - User input data
- * @param {string} mcpDir - Path to .mcp directory
+ * @param {string} mcpDir - Path to .create-prompt directory
  * @returns {string} Generated prompt content
  */
 function buildPromptFromContext(contextFiles, promptData, mcpDir) {
@@ -136,7 +136,7 @@ function displaySuccessMessage(info, contextCount) {
 async function createPrompt(options = {}) {
   const mcpDir = path.join(process.cwd(), config.PROMPT_DIR);
 
-  // Load context files from .mcp/context/
+  // Load context files from .create-prompt/context/
   const contextResult = loadContext(mcpDir);
 
   if (contextResult.errors.length > 0) {
@@ -145,7 +145,7 @@ async function createPrompt(options = {}) {
   }
 
   if (contextResult.warnings.length > 0 && Object.keys(contextResult.files).length === 0) {
-    console.log('⚠️  No context files found in .mcp/context/');
+    console.log('⚠️  No context files found in .create-prompt/context/');
     console.log('   Run `p ps` to generate project structure first.\n');
   }
 

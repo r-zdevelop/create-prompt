@@ -11,7 +11,7 @@ This document describes the design for enhancing `create-prompt` with a new **MC
 ### 1.1 New Directory Structure
 
 ```
-.mcp/                           ← MCP context root
+.create-prompt/                           ← MCP context root
 ├── prompts/                    ← Prompt templates (JSON)
 │   ├── base.json              ← Base/default prompt template
 │   ├── ui.json                ← UI-specific template
@@ -37,7 +37,7 @@ Following the existing layered architecture:
 src/
 ├── commands/
 │   ├── enhance.js             ← NEW: Main enhance command
-│   └── mcpInit.js             ← NEW: Initialize .mcp structure
+│   └── mcpInit.js             ← NEW: Initialize .create-prompt structure
 ├── services/
 │   ├── mcpService.js          ← NEW: MCP orchestration service
 │   ├── contextService.js      ← NEW: Context file loader
@@ -104,13 +104,13 @@ src/
 ```javascript
 // Exports
 module.exports = {
-  loadMcpContext,      // Load all context from .mcp directory
+  loadMcpContext,      // Load all context from .create-prompt directory
   generatePrompt,      // Main prompt generation function
-  validateMcpStructure // Validate .mcp directory structure
+  validateMcpStructure // Validate .create-prompt directory structure
 };
 
 // Core Functions
-async function loadMcpContext(mcpRoot = '.mcp') {
+async function loadMcpContext(mcpRoot = '.create-prompt') {
   // Returns: { prompts, context, schemas, config }
 }
 
@@ -119,14 +119,14 @@ async function generatePrompt(intent, options = {}) {
   // Returns: { prompt, metadata, warnings }
 }
 
-function validateMcpStructure(mcpRoot = '.mcp') {
+function validateMcpStructure(mcpRoot = '.create-prompt') {
   // Returns: { valid, errors, warnings }
 }
 ```
 
 ### 2.2 Context Service (`src/services/contextService.js`)
 
-**Responsibility**: Load and parse context files from `.mcp/context`.
+**Responsibility**: Load and parse context files from `.create-prompt/context`.
 
 ```javascript
 // Exports
@@ -346,8 +346,8 @@ module.exports = {
 | Command | Aliases | Description |
 |---------|---------|-------------|
 | `create-prompt enhance` | `e` | Generate contextualized prompt from intent |
-| `create-prompt mcp-init` | `mi` | Initialize .mcp directory structure |
-| `create-prompt mcp-validate` | `mv` | Validate .mcp configuration |
+| `create-prompt mcp-init` | `mi` | Initialize .create-prompt directory structure |
+| `create-prompt mcp-validate` | `mv` | Validate .create-prompt configuration |
 | `create-prompt mcp-list` | `ml` | List available templates/schemas |
 
 ### 4.2 Command: `enhance`
@@ -483,7 +483,7 @@ const prompt = await mcp.generatePrompt(
 console.log(prompt.content);
 
 // Advanced usage with custom context
-const context = await mcp.loadContext('.mcp');
+const context = await mcp.loadContext('.create-prompt');
 const parsed = mcp.parseIntent("add user authentication");
 const result = mcp.buildPrompt({
   intent: parsed,
@@ -494,7 +494,7 @@ const result = mcp.buildPrompt({
 });
 
 // Validation
-const validation = mcp.validateStructure('.mcp');
+const validation = mcp.validateStructure('.create-prompt');
 if (!validation.valid) {
   console.error('MCP validation failed:', validation.errors);
 }
@@ -530,7 +530,7 @@ class IntentParseError extends McpError { code = 'INTENT_PARSE_ERROR' }
 
 | Scenario | Behavior | User Message |
 |----------|----------|--------------|
-| `.mcp` directory missing | Prompt to run `mcp-init` | "MCP not initialized. Run `create-prompt mcp-init` first." |
+| `.create-prompt` directory missing | Prompt to run `mcp-init` | "MCP not initialized. Run `create-prompt mcp-init` first." |
 | Context file missing | Warning, continue | "Warning: context/project.md not found, skipping." |
 | Schema parse error | Error with details | "Schema error in colors.yaml: Invalid YAML at line 5" |
 | Template not found | Fallback to base | "Template 'custom' not found, using 'base'" |
@@ -568,7 +568,7 @@ const contextValidation = {
 
 ## 7. Configuration
 
-### 7.1 MCP Config File (`.mcp/config.json`)
+### 7.1 MCP Config File (`.create-prompt/config.json`)
 
 ```json
 {
@@ -623,7 +623,7 @@ const contextValidation = {
 ```javascript
 // Add to existing config.js
 const MCP_CONFIG = {
-  MCP_DIR: '.mcp',
+  MCP_DIR: '.create-prompt',
   PROMPTS_SUBDIR: 'prompts',
   CONTEXT_SUBDIR: 'context',
   SCHEMAS_SUBDIR: 'schemas',
@@ -665,7 +665,7 @@ module.exports = { ...existingConfig, MCP: MCP_CONFIG };
 
 - All existing commands remain unchanged
 - `.prompts` directory still functions as before
-- New `.mcp` directory is independent
+- New `.create-prompt` directory is independent
 - `create-prompt` (default command) still creates simple prompts
 
 ### 8.2 Cross-Feature Integration
@@ -790,7 +790,7 @@ tests/
 
 ## 11. Default Templates
 
-### 11.1 Base Template (`templates/mcp/prompts/base.json`)
+### 11.1 Base Template (`templates/create-prompt/prompts/base.json`)
 
 ```json
 {
@@ -819,7 +819,7 @@ tests/
 }
 ```
 
-### 11.2 UI Template (`templates/mcp/prompts/ui.json`)
+### 11.2 UI Template (`templates/create-prompt/prompts/ui.json`)
 
 ```json
 {
@@ -845,7 +845,7 @@ tests/
 }
 ```
 
-### 11.3 Default Context (`templates/mcp/context/project.md`)
+### 11.3 Default Context (`templates/create-prompt/context/project.md`)
 
 ```markdown
 ---

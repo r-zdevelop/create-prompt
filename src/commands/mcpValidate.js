@@ -1,7 +1,7 @@
 /**
  * MCP Validate Command
  *
- * Validate .mcp directory structure and configuration.
+ * Validate .create-prompt directory structure and configuration.
  */
 
 const fs = require('fs');
@@ -179,14 +179,14 @@ function validateSchemas(schemas, verbose) {
  */
 async function mcpValidate(args) {
   const options = parseMcpValidateArgs(args);
-  const mcpRoot = '.mcp';
+  const mcpRoot = '.create-prompt';
 
   console.log('\n🔍 Validating MCP structure...\n');
 
-  // Check if .mcp exists
+  // Check if .create-prompt exists
   if (!fs.existsSync(mcpRoot)) {
-    console.error('❌ .mcp directory not found.');
-    console.error('   Run `create-prompt mcp-init` to initialize.\n');
+    console.error('❌ .create-prompt directory not found.');
+    console.error('   Run `create-prompt init` to initialize.\n');
     return;
   }
 
@@ -206,7 +206,7 @@ async function mcpValidate(args) {
     console.log('📝 Templates:');
     if (Object.keys(mcpContext.prompts).length === 0) {
       console.log('   ⚠️  No templates found');
-      totalWarnings.push('No templates found in .mcp/prompts/');
+      totalWarnings.push('No templates found in .create-prompt/prompts/');
     } else {
       const result = validateTemplates(mcpContext.prompts, options.verbose);
       totalErrors.push(...result.errors);
@@ -223,7 +223,7 @@ async function mcpValidate(args) {
     console.log('📄 Context:');
     if (Object.keys(mcpContext.context).length === 0) {
       console.log('   ⚠️  No context files found');
-      totalWarnings.push('No context files found in .mcp/context/');
+      totalWarnings.push('No context files found in .create-prompt/context/');
     } else {
       const result = validateContextFiles(mcpContext.context, options.verbose);
       totalErrors.push(...result.errors);
@@ -240,7 +240,7 @@ async function mcpValidate(args) {
     console.log('🔧 Schemas:');
     if (Object.keys(mcpContext.schemas).length === 0) {
       console.log('   ⚠️  No schemas found');
-      totalWarnings.push('No schemas found in .mcp/schemas/');
+      totalWarnings.push('No schemas found in .create-prompt/schemas/');
     } else {
       const result = validateSchemas(mcpContext.schemas, options.verbose);
       totalErrors.push(...result.errors);

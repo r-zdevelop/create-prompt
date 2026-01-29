@@ -37,11 +37,11 @@ const DEFAULT_CONFIG = {
 };
 
 /**
- * Load MCP configuration from .mcp/config.json
- * @param {string} mcpRoot - Path to .mcp directory
+ * Load MCP configuration from .create-prompt/config.json
+ * @param {string} mcpRoot - Path to .create-prompt directory
  * @returns {Object} - Merged configuration
  */
-function loadMcpConfig(mcpRoot = '.mcp') {
+function loadMcpConfig(mcpRoot = '.create-prompt') {
   const configPath = path.join(mcpRoot, 'config.json');
 
   try {
@@ -79,10 +79,10 @@ function mergeConfig(base, override) {
 
 /**
  * Load all MCP context (prompts, context, schemas)
- * @param {string} mcpRoot - Path to .mcp directory
+ * @param {string} mcpRoot - Path to .create-prompt directory
  * @returns {{ prompts: Object, context: Object, schemas: Object, config: Object, errors: string[], warnings: string[] }}
  */
-async function loadMcpContext(mcpRoot = '.mcp') {
+async function loadMcpContext(mcpRoot = '.create-prompt') {
   const result = {
     prompts: {},
     context: {},
@@ -92,7 +92,7 @@ async function loadMcpContext(mcpRoot = '.mcp') {
     warnings: []
   };
 
-  // Check if .mcp exists
+  // Check if .create-prompt exists
   if (!fs.existsSync(mcpRoot)) {
     result.errors.push(`MCP directory not found: ${mcpRoot}`);
     return result;
@@ -123,8 +123,8 @@ async function loadMcpContext(mcpRoot = '.mcp') {
 }
 
 /**
- * Load prompt templates from .mcp/prompts
- * @param {string} mcpRoot - Path to .mcp directory
+ * Load prompt templates from .create-prompt/prompts
+ * @param {string} mcpRoot - Path to .create-prompt directory
  * @returns {{ templates: Object, errors: string[], warnings: string[] }}
  */
 function loadPromptTemplates(mcpRoot) {
@@ -161,10 +161,10 @@ function loadPromptTemplates(mcpRoot) {
 
 /**
  * Validate MCP directory structure
- * @param {string} mcpRoot - Path to .mcp directory
+ * @param {string} mcpRoot - Path to .create-prompt directory
  * @returns {{ valid: boolean, errors: string[], warnings: string[] }}
  */
-function validateMcpStructure(mcpRoot = '.mcp') {
+function validateMcpStructure(mcpRoot = '.create-prompt') {
   const errors = [];
   const warnings = [];
 
@@ -227,7 +227,7 @@ function validateMcpStructure(mcpRoot = '.mcp') {
  */
 async function generatePrompt(intentString, options = {}) {
   const {
-    mcpRoot = '.mcp',
+    mcpRoot = '.create-prompt',
     template: templateName,
     target = 'claude',
     includeContext = true,
@@ -370,10 +370,10 @@ async function generatePrompt(intentString, options = {}) {
 
 /**
  * Get summary of MCP configuration
- * @param {string} mcpRoot - Path to .mcp directory
+ * @param {string} mcpRoot - Path to .create-prompt directory
  * @returns {Object} - Summary object
  */
-async function getMcpSummary(mcpRoot = '.mcp') {
+async function getMcpSummary(mcpRoot = '.create-prompt') {
   const mcpContext = await loadMcpContext(mcpRoot);
 
   return {

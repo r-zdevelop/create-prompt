@@ -6,10 +6,10 @@ const { getProjectStructureString } = require('../utils/tree');
 
 /**
  * Initialize base template in project
- * Creates .mcp directory and copies base template with auto-filled structure
+ * Creates .create-prompt directory and copies base template with auto-filled structure
  */
 function initializeBaseTemplate() {
-  // Create .mcp directory
+  // Create .create-prompt directory
   const promptDir = path.join(process.cwd(), config.PROMPT_DIR);
   if (!fs.existsSync(promptDir)) {
     fs.mkdirSync(promptDir, { recursive: true });
@@ -134,7 +134,7 @@ function updateBaseTemplateHistory(lastThing) {
 
 /**
  * Build prompt from base_prompt.md if it exists
- * @param {string} mcpDir - Path to .mcp directory
+ * @param {string} mcpDir - Path to .create-prompt directory
  * @param {string} task - User task/intent
  * @returns {string|null} Prompt content or null if base_prompt.md doesn't exist
  */

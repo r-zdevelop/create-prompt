@@ -49,11 +49,11 @@ cd /path/to/your/project
 node /path/to/create-prompt/bin/create-prompt init
 ```
 
-This creates a `.mcp` folder in your project with:
+This creates a `.create-prompt` folder in your project with:
 
 ```
 your-project/
-└── .mcp/
+└── .create-prompt/
     ├── context/           # Your context files
     │   ├── persona.md     # AI personality/role
     │   ├── standards.md   # Coding standards
@@ -68,9 +68,9 @@ your-project/
 
 ### Step 3: Customize your context files
 
-Edit the files in `.mcp/context/` to match your project:
+Edit the files in `.create-prompt/context/` to match your project:
 
-**`.mcp/context/persona.md`** - Define how the AI should behave:
+**`.create-prompt/context/persona.md`** - Define how the AI should behave:
 ```markdown
 ---
 priority: high
@@ -83,7 +83,7 @@ You write clean, well-documented code following PSR-12 standards.
 You prefer simple solutions over complex abstractions.
 ```
 
-**`.mcp/context/standards.md`** - Your coding standards:
+**`.create-prompt/context/standards.md`** - Your coding standards:
 ```markdown
 ---
 priority: high
@@ -153,7 +153,7 @@ node bin/create-prompt enhance "Create REST API endpoint for user profiles"
 
 After running `enhance`, your prompt is:
 1. **Displayed** in the terminal
-2. **Saved** to `.mcp/results/YYYY-MM-DD-task-name.md`
+2. **Saved** to `.create-prompt/results/YYYY-MM-DD-task-name.md`
 
 You can then copy from terminal or open the saved file.
 
@@ -237,9 +237,9 @@ The tool suggests which files to examine:
 
 ### Adding Custom Context Files
 
-Create new `.md` files in `.mcp/context/`:
+Create new `.md` files in `.create-prompt/context/`:
 
-**`.mcp/context/database.md`:**
+**`.create-prompt/context/database.md`:**
 ```markdown
 ---
 priority: medium
@@ -256,7 +256,7 @@ We use MySQL 8.0 with the following tables:
 Indexes exist on: users.email, posts.user_id
 ```
 
-**`.mcp/context/api.md`:**
+**`.create-prompt/context/api.md`:**
 ```markdown
 ---
 priority: medium
@@ -296,13 +296,13 @@ Regenerate the project structure anytime:
 node bin/create-prompt project-structure
 ```
 
-This updates `.mcp/context/project_structure.md` with your current file tree.
+This updates `.create-prompt/context/project_structure.md` with your current file tree.
 
 ---
 
 ## Configuration Options
 
-### `.mcp/config.json`
+### `.create-prompt/config.json`
 
 ```json
 {
@@ -377,7 +377,7 @@ The tool recognizes these keywords for task detection:
 
 ### 4. Review Generated Prompts
 
-Always check `.mcp/results/` to see what was generated. This helps you:
+Always check `.create-prompt/results/` to see what was generated. This helps you:
 - Understand what context is being included
 - Identify missing context you should add
 - Improve your intent phrasing
@@ -387,7 +387,7 @@ Always check `.mcp/results/` to see what was generated. This helps you:
 The more context you provide, the better your prompts:
 
 ```
-.mcp/context/
+.create-prompt/context/
 ├── persona.md          # Your AI assistant's role
 ├── standards.md        # Coding conventions
 ├── architecture.md     # System design decisions
@@ -402,7 +402,7 @@ The more context you provide, the better your prompts:
 
 | Command | Description |
 |---------|-------------|
-| `create-prompt init` | Initialize .mcp directory in current project |
+| `create-prompt init` | Initialize .create-prompt directory in current project |
 | `create-prompt enhance "intent"` | Generate smart prompt for your task |
 | `create-prompt project-structure` | Regenerate project structure context |
 | `create-prompt finish` | Record what you did (updates history) |
@@ -418,7 +418,7 @@ Run `node bin/create-prompt init` in your project directory first.
 
 ### Prompt seems incomplete
 
-Check that your context files exist in `.mcp/context/` and have content.
+Check that your context files exist in `.create-prompt/context/` and have content.
 
 ### Wrong task type detected
 
@@ -426,7 +426,7 @@ Be more specific in your intent. Include keywords that match your task type.
 
 ### Too much/too little context
 
-Adjust `relevance.minScore` in `.mcp/config.json`:
+Adjust `relevance.minScore` in `.create-prompt/config.json`:
 - Lower (0.1-0.2): Include more context
 - Higher (0.4-0.5): Be more selective
 
@@ -440,7 +440,7 @@ cd ~/projects/my-laravel-app
 node ~/tools/create-prompt/bin/create-prompt init
 
 # 2. Edit your persona
-nano .mcp/context/persona.md
+nano .create-prompt/context/persona.md
 # Add: "You are a Laravel expert..."
 
 # 3. Generate prompt for today's task

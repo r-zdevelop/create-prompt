@@ -1,7 +1,7 @@
 /**
  * MCP Init Command
  *
- * Initialize .mcp directory structure with default templates and configuration.
+ * Initialize .create-prompt directory structure with default templates and configuration.
  * Copies template files from the bundled templates directory.
  */
 
@@ -15,7 +15,7 @@ const InputCollector = require('../utils/input');
  * @returns {string}
  */
 function getTemplatesPath() {
-  return path.join(__dirname, '../../templates/mcp');
+  return path.join(__dirname, '../../templates/create-prompt');
 }
 
 /**
@@ -81,7 +81,7 @@ const DEFAULT_CONFIG = {
     strictValidation: false
   },
   output: {
-    directory: '.mcp',
+    directory: config.PROMPT_DIR,
     filenamePattern: '{{date}}_{{template}}_{{slug}}.md'
   }
 };
@@ -152,14 +152,14 @@ function writeFile(filePath, content, force = false) {
  */
 async function mcpInit(args) {
   const options = parseMcpInitArgs(args);
-  const mcpRoot = '.mcp';
+  const mcpRoot = '.create-prompt';
   const templatesPath = getTemplatesPath();
 
   console.log('\n🚀 Initializing MCP context system...\n');
 
   // Check if already exists
   if (fs.existsSync(mcpRoot) && !options.force) {
-    console.log('⚠️  .mcp directory already exists.');
+    console.log('⚠️  .create-prompt directory already exists.');
     console.log('   Use --force to overwrite existing files.\n');
 
     const inputCollector = new InputCollector();
@@ -248,15 +248,15 @@ async function mcpInit(args) {
     console.log(`   ✅ config.json`);
   }
 
-  // Add .mcp to .gitignore (optional - some may want to track it)
+  // Add .create-prompt to .gitignore (optional - some may want to track it)
   console.log('\n📋 Checking .gitignore...');
   const gitignorePath = '.gitignore';
   if (fs.existsSync(gitignorePath)) {
     const gitignore = fs.readFileSync(gitignorePath, 'utf-8');
-    if (!gitignore.includes('.mcp')) {
-      console.log('   ℹ️  Consider adding .mcp to .gitignore if you want to keep it local.');
+    if (!gitignore.includes('.create-prompt')) {
+      console.log('   ℹ️  Consider adding .create-prompt to .gitignore if you want to keep it local.');
     } else {
-      console.log('   ✅ .mcp already in .gitignore');
+      console.log('   ✅ .create-prompt already in .gitignore');
     }
   }
 
@@ -264,7 +264,7 @@ async function mcpInit(args) {
   console.log('\n' + '─'.repeat(50));
   console.log('\n✅ MCP context system initialized!\n');
   console.log('📂 Structure created:');
-  console.log('   .mcp/');
+  console.log('   .create-prompt/');
   console.log('   ├── prompts/     → Prompt templates');
   console.log('   ├── context/     → Project context docs');
   console.log('   │   ├── persona.md');
@@ -275,7 +275,7 @@ async function mcpInit(args) {
   console.log('   └── config.json  → Configuration\n');
 
   console.log('🎯 Next steps:');
-  console.log('   1. Edit .mcp/context/ files to build your base_prompt.md');
+  console.log('   1. Edit .create-prompt/context/ files to build your base_prompt.md');
   console.log('   2. Run: p "your task description"');
   console.log('   3. Or: p e "your task description"\n');
 }

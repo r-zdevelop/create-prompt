@@ -62,7 +62,7 @@ function suggestRelevantFiles(intent, options = {}) {
  */
 function findMatchingDirectories(rootPath, patterns, maxResults = 5) {
   const results = [];
-  const ignoreList = ['node_modules', '.git', 'vendor', '.mcp', 'dist', 'build', 'coverage'];
+  const ignoreList = ['node_modules', '.git', 'vendor', '.create-prompt', 'dist', 'build', 'coverage'];
 
   function searchDir(dirPath, depth = 0) {
     if (depth > 3 || results.length >= maxResults) return;
@@ -122,7 +122,7 @@ function findMatchingDirectories(rootPath, patterns, maxResults = 5) {
  */
 function findMatchingFiles(rootPath, filePatterns, keywords = [], maxResults = 10) {
   const results = [];
-  const ignoreList = ['node_modules', '.git', 'vendor', '.mcp', 'dist', 'build', 'coverage'];
+  const ignoreList = ['node_modules', '.git', 'vendor', '.create-prompt', 'dist', 'build', 'coverage'];
   const ignoreExtensions = ['.lock', '.log', '.map', '.min.js', '.min.css'];
 
   function searchDir(dirPath, depth = 0) {

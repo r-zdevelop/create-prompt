@@ -42,14 +42,14 @@ Utilities (src/utils/*.js)
 **Commands** (`src/commands/`):
 - `createPrompt.js` - Interactive prompt creation
 - `enhance.js` - MCP-powered contextualized prompt generation
-- `mcpInit.js` - Initialize `.mcp` directory from templates
+- `mcpInit.js` - Initialize `.create-prompt` directory from templates
 - `finishCommand.js` - Git commit workflow
 - `generateStructure.js` - Project tree generation
 - `generateFilesMarkdown.js` - File content aggregation
 
 **Services** (`src/services/`):
 - `mcpService.js` - MCP orchestration (loads context, schemas, templates)
-- `contextService.js` - Parses `.mcp/context/*.md` files with YAML frontmatter
+- `contextService.js` - Parses `.create-prompt/context/*.md` files with YAML frontmatter
 - `schemaService.js` - Parses JSON/YAML schemas, resolves variables
 - `intentService.js` - Parses casual user intents into structured requirements
 - `templateService.js` - Base prompt template handling
@@ -65,23 +65,23 @@ Utilities (src/utils/*.js)
 ### Configuration
 
 All constants in `src/config.js`:
-- `PROMPT_DIR: '.mcp'` - Working directory for all commands
+- `PROMPT_DIR: '.create-prompt'` - Working directory for all commands
 - `MCP.*` - MCP-specific configuration
 - `MESSAGES.*` - User-facing strings
 - `ALWAYS_IGNORE` - Default ignore patterns
 
 ### MCP Context System
 
-The `.mcp` directory structure:
+The `.create-prompt` directory structure:
 ```
-.mcp/
+.create-prompt/
 ├── prompts/     ← JSON prompt templates
 ├── context/     ← Markdown context files with YAML frontmatter
 ├── schemas/     ← JSON/YAML variable definitions
 └── config.json  ← MCP configuration
 ```
 
-Bundled templates are in `templates/mcp/` and copied during `init`.
+Bundled templates are in `templates/create-prompt/` and copied during `init`.
 
 ### Data Flow for `enhance` Command
 

@@ -2,7 +2,7 @@
  * Enhance Command
  *
  * Generate contextualized prompts from casual user intents.
- * Uses .mcp directory for context, schemas, and templates.
+ * Uses .create-prompt directory for context, schemas, and templates.
  */
 
 const fs = require('fs');
@@ -86,7 +86,7 @@ async function enhance(args) {
 
   try {
     // Check MCP structure
-    const validation = validateMcpStructure('.mcp');
+    const validation = validateMcpStructure('.create-prompt');
     if (!validation.valid) {
       console.error('\n❌ MCP validation failed:');
       for (const error of validation.errors) {
@@ -110,7 +110,7 @@ async function enhance(args) {
     if (!intent || options.interactive) {
       // Show MCP summary in interactive mode
       if (options.interactive) {
-        const summary = await getMcpSummary('.mcp');
+        const summary = await getMcpSummary('.create-prompt');
         console.log('\n📦 MCP Context:');
         console.log(`   Templates: ${summary.templates.join(', ') || 'none'}`);
         console.log(`   Context: ${summary.context.join(', ') || 'none'}`);
@@ -147,7 +147,7 @@ async function enhance(args) {
     console.log('\n⚙️  Generating prompt...\n');
 
     const result = await generatePrompt(intent, {
-      mcpRoot: '.mcp',
+      mcpRoot: '.create-prompt',
       template: options.template,
       target: options.target,
       includeContext: !options.noContext,
@@ -181,8 +181,8 @@ async function enhance(args) {
       fs.writeFileSync(outputPath, result.prompt, 'utf-8');
       console.log(`✅ Prompt saved to: ${outputPath}`);
     } else {
-      // Save to .mcp/results/ by default
-      const mcpDir = path.join(process.cwd(), '.mcp');
+      // Save to .create-prompt/results/ by default
+      const mcpDir = path.join(process.cwd(), '.create-prompt');
       const resultsDir = path.join(mcpDir, 'results');
 
       if (!fs.existsSync(resultsDir)) {

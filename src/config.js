@@ -5,7 +5,7 @@ const path = require('path');
  */
 module.exports = {
   // Directory and file paths
-  PROMPT_DIR: '.mcp',
+  PROMPT_DIR: '.create-prompt',
   BASE_TEMPLATE_NAME: 'base_prompt.md',
 
   // Template paths (relative to package root)
@@ -22,7 +22,7 @@ module.exports = {
   },
 
   // Files and directories to always ignore
-  ALWAYS_IGNORE: ['node_modules', '.git', '.DS_Store', 'vendor', '.mcp'],
+  ALWAYS_IGNORE: ['node_modules', '.git', '.DS_Store', 'vendor', '.create-prompt'],
 
   // Version
   VERSION: '1.5.0',
@@ -48,7 +48,7 @@ module.exports = {
 
   // MCP Configuration
   MCP: {
-    DIR: '.mcp',
+    DIR: '.create-prompt',
     PROMPTS_SUBDIR: 'prompts',
     CONTEXT_SUBDIR: 'context',
     SCHEMAS_SUBDIR: 'schemas',
@@ -85,7 +85,7 @@ module.exports = {
     PROMPT_CREATED: '\n✨ Prompt created! \n',
     BASE_COPIED: 'base_prompt.md copied to your project',
     BASE_COPIED_WITH_STRUCTURE: 'base_prompt.md copied to your project with auto-generated structure',
-    GITIGNORE_UPDATED: '.mcp added to .gitignore',
+    GITIGNORE_UPDATED: '.create-prompt added to .gitignore',
     STRUCTURE_GENERATED: (filename) => `Project structure saved to ${filename}`,
   },
 

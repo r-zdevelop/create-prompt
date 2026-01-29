@@ -1,7 +1,7 @@
 /**
  * Context Service
  *
- * Responsible for loading and parsing context files from .mcp/context directory.
+ * Responsible for loading and parsing context files from .create-prompt/context directory.
  * Supports Markdown files with optional YAML frontmatter.
  */
 
@@ -80,11 +80,11 @@ function loadContextFile(filePath) {
 }
 
 /**
- * Load all context files from .mcp/context directory
- * @param {string} mcpRoot - Path to .mcp directory
+ * Load all context files from .create-prompt/context directory
+ * @param {string} mcpRoot - Path to .create-prompt directory
  * @returns {{ files: Object, errors: string[] }}
  */
-function loadContext(mcpRoot = '.mcp') {
+function loadContext(mcpRoot = '.create-prompt') {
   const contextDir = path.join(mcpRoot, 'context');
   const result = { files: {}, errors: [], warnings: [] };
 
@@ -204,9 +204,9 @@ function getContextSummary(contextFiles) {
 
 /**
  * Rebuild base_prompt.md from all context files
- * @param {string} mcpRoot - Path to .mcp directory
+ * @param {string} mcpRoot - Path to .create-prompt directory
  */
-function rebuildBasePrompt(mcpRoot = '.mcp') {
+function rebuildBasePrompt(mcpRoot = '.create-prompt') {
   const fs = require('fs');
   const basePromptPath = path.join(mcpRoot, 'base_prompt.md');
 

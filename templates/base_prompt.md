@@ -11,4 +11,4 @@
 
 ---
 
-<!-- Context files from .mcp/context/ will be included below -->
+<!-- Context files from .create-prompt/context/ will be included below -->

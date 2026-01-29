@@ -57,9 +57,9 @@ COMMANDS:
   help                           Show this help message
 
 MCP CONTEXT COMMANDS:
-  init, mi                       Initialize .mcp directory structure
+  init, mi                       Initialize .create-prompt directory structure
   enhance, e <intent>            Generate contextualized prompt from intent
-  mcp-validate, mv               Validate .mcp configuration
+  mcp-validate, mv               Validate .create-prompt configuration
   mcp-list, ml                   List templates, schemas, and context
 
 OPTIONS:
@@ -95,12 +95,12 @@ For more information, visit: https://github.com/r-zdevelop/create-prompt
 
 /**
  * Initialize project environment
- * - Create .mcp directory
- * - Add .mcp to .gitignore
+ * - Create .create-prompt directory
+ * - Add .create-prompt to .gitignore
  * - Initialize base template
  */
 function initializeEnvironment() {
-  // Add .mcp to .gitignore
+  // Add .create-prompt to .gitignore
   if (ensurePromptsInGitignore()) {
     console.log(config.MESSAGES.GITIGNORE_UPDATED);
   }

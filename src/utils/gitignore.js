@@ -3,7 +3,7 @@ const path = require('path');
 const config = require('../config');
 
 /**
- * Parse .mcp/ignore_files.txt and return additional ignore patterns
+ * Parse .create-prompt/ignore_files.txt and return additional ignore patterns
  * @returns {string[]} Array of ignore patterns
  */
 function parseIgnoreFiles() {
@@ -41,7 +41,7 @@ function parseGitignore() {
     ignorePatterns.push(...lines);
   }
 
-  // Add patterns from .mcp/ignore_files.txt
+  // Add patterns from .create-prompt/ignore_files.txt
   ignorePatterns.push(...parseIgnoreFiles());
 
   return ignorePatterns;
@@ -90,7 +90,7 @@ function shouldIgnore(itemPath, ignorePatterns) {
 }
 
 /**
- * Add .mcp to .gitignore if not already present
+ * Add .create-prompt to .gitignore if not already present
  * @returns {boolean} True if added, false if already present
  */
 function ensureMcpInGitignore() {
@@ -103,15 +103,15 @@ function ensureMcpInGitignore() {
   const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
   const lines = gitignoreContent.split('\n');
 
-  const hasMcpEntry = lines.some(line => {
+  const hasEntry = lines.some(line => {
     const trimmed = line.trim();
-    return trimmed === '.mcp' || trimmed === '.mcp/' || trimmed === '/.mcp';
+    return trimmed === '.create-prompt' || trimmed === '.create-prompt/' || trimmed === '/.create-prompt';
   });
 
-  if (!hasMcpEntry) {
+  if (!hasEntry) {
     const newContent = gitignoreContent.endsWith('\n')
-      ? gitignoreContent + '.mcp\n'
-      : gitignoreContent + '\n.mcp\n';
+      ? gitignoreContent + '.create-prompt\n'
+      : gitignoreContent + '\n.create-prompt\n';
 
     fs.writeFileSync(gitignorePath, newContent);
     return true;

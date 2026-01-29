@@ -135,12 +135,12 @@ function formatContext(contextFile, verbose) {
  */
 async function mcpList(args) {
   const options = parseMcpListArgs(args);
-  const mcpRoot = '.mcp';
+  const mcpRoot = '.create-prompt';
 
-  // Check if .mcp exists
+  // Check if .create-prompt exists
   if (!fs.existsSync(mcpRoot)) {
-    console.error('\n❌ .mcp directory not found.');
-    console.error('   Run `create-prompt mcp-init` to initialize.\n');
+    console.error('\n❌ .create-prompt directory not found.');
+    console.error('   Run `create-prompt init` to initialize.\n');
     return;
   }
 
