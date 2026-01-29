@@ -73,7 +73,7 @@ const DEFAULT_CONFIG = {
     format: 'markdown'
   },
   context: {
-    autoLoad: ['persona', 'standards', 'instructions', 'project_structure'],
+    autoLoad: ['persona', 'standards', 'instructions'],
     exclude: ['drafts/*']
   },
   schemas: {
@@ -270,17 +270,14 @@ async function mcpInit(args) {
   console.log('   │   ├── persona.md');
   console.log('   │   ├── standards.md');
   console.log('   │   ├── instructions.md');
-  console.log('   │   ├── project_structure.md');
-  console.log('   │   ├── history.md');
-  console.log('   │   └── latest_commit.md');
+  console.log('   │   └── project_structure.md');
   console.log('   ├── schemas/     → Variable schemas');
   console.log('   └── config.json  → Configuration\n');
 
   console.log('🎯 Next steps:');
-  console.log('   1. Edit .mcp/context/persona.md with your AI persona');
-  console.log('   2. Update .mcp/context/standards.md with your coding standards');
-  console.log('   3. Add project structure to .mcp/context/project_structure.md');
-  console.log('   4. Run: create-prompt enhance "your task description"\n');
+  console.log('   1. Edit .mcp/context/ files to build your base_prompt.md');
+  console.log('   2. Run: p "your task description"');
+  console.log('   3. Or: p e "your task description"\n');
 }
 
 module.exports = mcpInit;

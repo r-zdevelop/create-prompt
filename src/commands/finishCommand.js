@@ -1,9 +1,5 @@
-const fs = require('fs');
-const path = require('path');
 const { execSync } = require('child_process');
 const { createInterface } = require('readline');
-const config = require('../config');
-const { rebuildBasePrompt } = require('../services/contextService');
 
 /**
  * Ask user a question and return the answer
@@ -70,8 +66,7 @@ async function askForChangesTable(rl, files) {
     return '';
   }
 
-  console.log("\nDescribe changes for each file (press Enter 3 times to finish):");
-  console.log("Tip: Use • for bullet points, <br> for line breaks\n");
+  console.log("\nDescribe changes for each file (press Enter to skip, 3 skips to finish):\n");
 
   const tableRows = [];
   let emptyCount = 0;
@@ -79,7 +74,7 @@ async function askForChangesTable(rl, files) {
   for (const file of files) {
     const description = await askQuestion(
       rl,
-      `What did you do in "${file.path}"? (${file.status}) \n> `,
+      `"${file.path}" (${file.status}): `,
       false
     );
 
@@ -89,11 +84,10 @@ async function askForChangesTable(rl, files) {
         console.log("Finishing table input...");
         break;
       }
-      // Add file to table with default description
       tableRows.push({
         file: `**${file.path}**`,
         type: file.status,
-        changes: 'No description provided'
+        changes: '-'
       });
     } else {
       emptyCount = 0;
@@ -140,12 +134,8 @@ function getGitStatus() {
  */
 function performGitCommit(message) {
   try {
-    // Add all changes
     execSync('git add .', { encoding: 'utf8' });
-
-    // Commit with message
     execSync(`git commit -m "${message.replace(/"/g, '\\"')}"`, { encoding: 'utf8' });
-
     return true;
   } catch (error) {
     console.error('Error performing git commit:', error.message);
@@ -154,136 +144,23 @@ function performGitCommit(message) {
 }
 
 /**
- * Create or replace latest_commit.md file in .mcp/context/
- * @param {string} whatUserDid - What the user did in the directory
- * @param {string} changesTable - Changes table
- * @param {string} gitStatus - Git status output
- */
-function createLatestCommitFile(whatUserDid, changesTable, gitStatus) {
-  const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
-  const contextDir = path.join(promptsDir, 'context');
-
-  // Ensure .mcp/context directory exists
-  if (!fs.existsSync(contextDir)) {
-    fs.mkdirSync(contextDir, { recursive: true });
-  }
-
-  const latestCommitPath = path.join(contextDir, 'latest_commit.md');
-  const timestamp = new Date().toISOString();
-
-  let content = `---
-type: commit
-priority: medium
-tags: [git, changes]
----
-
-# Latest Commit
-
-**${whatUserDid}**
-
-**Date:** ${timestamp}
-`;
-
-  // Add Changes section if table is provided
-  if (changesTable && changesTable.trim()) {
-    content += `
-## Changes
-
-${changesTable}
-`;
-  }
-
-  content += `
-## Git Status Before Commit
-
-\`\`\`
-${gitStatus}
-\`\`\`
-`;
-
-  fs.writeFileSync(latestCommitPath, content);
-  console.log(`\n✅ Created/updated: ${latestCommitPath}`);
-}
-
-
-/**
- * Update history.md in context/ with new entry
- * @param {string} whatUserDid - What the user did
- */
-function updateHistoryFile(whatUserDid) {
-  const promptsDir = path.join(process.cwd(), config.PROMPT_DIR);
-  const contextDir = path.join(promptsDir, 'context');
-  const historyPath = path.join(contextDir, 'history.md');
-
-  // Ensure context directory exists
-  if (!fs.existsSync(contextDir)) {
-    fs.mkdirSync(contextDir, { recursive: true });
-  }
-
-  const timestamp = new Date().toISOString().slice(0, 10);
-  const newEntry = `- ${timestamp}: ${whatUserDid}`;
-
-  if (fs.existsSync(historyPath)) {
-    // Read existing file and add new entry after the header
-    let content = fs.readFileSync(historyPath, 'utf8');
-
-    // Find the # History header and add entry after it
-    const historyHeaderRegex = /(# History\n+)/;
-
-    if (historyHeaderRegex.test(content)) {
-      content = content.replace(historyHeaderRegex, `$1${newEntry}\n`);
-    } else {
-      // If no header found, append to end
-      content += `\n${newEntry}`;
-    }
-
-    fs.writeFileSync(historyPath, content);
-  } else {
-    // Create new history file with YAML frontmatter
-    const content = `---
-type: history
-priority: low
-tags: [changelog, tracking]
----
-
-# History
-
-${newEntry}
-`;
-    fs.writeFileSync(historyPath, content);
-  }
-
-  console.log(`✅ Updated: ${historyPath}`);
-}
-
-/**
- * Build full formatted commit message
- * @param {string} whatUserDid - What the user did in the directory
+ * Build commit message with changes table
+ * @param {string} summary - Commit summary
  * @param {string} changesTable - Changes table
  * @returns {string} Formatted commit message
  */
-function buildCommitMessage(whatUserDid, changesTable) {
-  const timestamp = new Date().toISOString();
+function buildCommitMessage(summary, changesTable) {
+  let message = `## ${summary}`;
 
-  let message = `## ${whatUserDid}
-
-**Date:** ${timestamp}
-`;
-
-  // Add Changes section if table is provided
   if (changesTable && changesTable.trim()) {
-    message += `
-### Changes
-
-${changesTable}
-`;
+    message += `\n\n### Changes\n\n${changesTable}`;
   }
 
   return message;
 }
 
 /**
- * Finish command - handles the complete workflow
+ * Finish command - git commit with changes table
  */
 async function finishCommand() {
   const rl = createInterface({
@@ -294,35 +171,25 @@ async function finishCommand() {
   try {
     console.log('\n🏁 Finishing up your work...\n');
 
-    // Step 1: Ask what the user did (mandatory)
-    const whatUserDid = await askQuestion(
-      rl,
-      "What did you do in this directory? (required)\n> ",
-      true
-    );
-
-    // Step 2: Run git status
-    console.log('\n📊 Running git status...\n');
+    // Show git status
+    console.log('📊 Git status:\n');
     const gitStatus = getGitStatus();
     console.log(gitStatus);
 
-    // Step 3: Get modified files and ask for changes table (optional)
+    // Ask for commit summary
+    const summary = await askQuestion(
+      rl,
+      "What did you do? (commit summary): ",
+      true
+    );
+
+    // Get modified files and ask for changes table
     const modifiedFiles = getModifiedFiles();
     const changesTable = await askForChangesTable(rl, modifiedFiles);
 
-    // Step 4: Create or replace latest_commit.md in context/
-    createLatestCommitFile(whatUserDid, changesTable, gitStatus);
-
-    // Step 5: Update history.md in context/
-    updateHistoryFile(whatUserDid);
-
-    // Step 6: Rebuild base_prompt.md from all context files
-    const mcpDir = path.join(process.cwd(), config.PROMPT_DIR);
-    rebuildBasePrompt(mcpDir);
-
-    // Step 7: Perform the commit with full formatted message
+    // Build and perform the commit
     console.log('\n💾 Creating git commit...');
-    const commitMessage = buildCommitMessage(whatUserDid, changesTable);
+    const commitMessage = buildCommitMessage(summary, changesTable);
     const success = performGitCommit(commitMessage);
 
     if (success) {
