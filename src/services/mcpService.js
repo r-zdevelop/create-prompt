@@ -13,6 +13,7 @@ const { parseIntent, matchTemplates, inferContext } = require('./intentService')
 const { buildPrompt } = require('../utils/promptBuilder');
 const { detectTaskType, getTaskRequirements, getRelevantPaths } = require('./taskTypeService');
 const { extractTaskKeywords, filterByRelevance } = require('./relevanceService');
+const { buildFromBasePrompt } = require('./templateService');
 const config = require('../config');
 
 /**
@@ -240,6 +241,21 @@ async function generatePrompt(intentString, options = {}) {
   } = options;
 
   const warnings = [];
+
+  // Check for base_prompt.md - if exists, use it directly
+  const basePrompt = buildFromBasePrompt(mcpRoot, intentString);
+  if (basePrompt) {
+    return {
+      prompt: basePrompt,
+      metadata: {
+        target,
+        format,
+        timestamp: new Date().toISOString(),
+        usedBasePrompt: true
+      },
+      warnings
+    };
+  }
 
   // Load MCP context
   const mcpContext = await loadMcpContext(mcpRoot);

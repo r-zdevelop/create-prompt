@@ -3,6 +3,7 @@ const path = require('path');
 const config = require('../config');
 const InputCollector = require('../utils/input');
 const { loadContext } = require('../services/contextService');
+const { buildFromBasePrompt } = require('../services/templateService');
 const { generatePromptFilename } = require('../utils/slugify');
 
 /**
@@ -17,22 +18,16 @@ async function collectUserInput(options) {
   };
 
   try {
-    // Ask for prompt name (title) - mandatory
-    data.promptName = await input.askWithValidation(
-      config.PROMPTS.PROMPT_NAME,
-      (answer) => answer ? null : config.VALIDATION.EMPTY_PROMPT_NAME,
-      config.VALIDATION.EMPTY_PROMPT_NAME
+    // Ask for task - used for both filename and Task section
+    data.task = await input.askWithValidation(
+      'What do you want to do? ',
+      (answer) => answer ? null : 'Task cannot be empty',
+      'Task cannot be empty'
     );
 
-    // Ask for task/goal (optional)
-    data.task = await input.ask(config.PROMPTS.TASK);
-
-    // Ask for tags (skip in quick mode)
-    if (!options.quick) {
-      data.tags = await input.askTags(config.PROMPTS.TAGS);
-    } else {
-      data.tags = [];
-    }
+    // Use task as the prompt name for filename generation
+    data.promptName = data.task;
+    data.tags = [];
 
     return data;
   } finally {
@@ -41,12 +36,20 @@ async function collectUserInput(options) {
 }
 
 /**
- * Build prompt content from context files
+ * Build prompt content from base_prompt.md or context files
  * @param {Object} contextFiles - Loaded context files
  * @param {Object} promptData - User input data
+ * @param {string} mcpDir - Path to .mcp directory
  * @returns {string} Generated prompt content
  */
-function buildPromptFromContext(contextFiles, promptData) {
+function buildPromptFromContext(contextFiles, promptData, mcpDir) {
+  // Check for base_prompt.md first
+  const basePrompt = buildFromBasePrompt(mcpDir, promptData.task);
+  if (basePrompt) {
+    return basePrompt;
+  }
+
+  // Fallback: build from context files
   const sections = [];
 
   // Title with single #
@@ -149,8 +152,8 @@ async function createPrompt(options = {}) {
   // Collect user input
   const promptData = await collectUserInput(options);
 
-  // Build prompt from context
-  const content = buildPromptFromContext(contextResult.files, promptData);
+  // Build prompt from context (or base_prompt.md if exists)
+  const content = buildPromptFromContext(contextResult.files, promptData, mcpDir);
 
   // Create prompt file in results directory
   const fileInfo = createPromptFile(promptData, content);

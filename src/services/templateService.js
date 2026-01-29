@@ -132,8 +132,26 @@ function updateBaseTemplateHistory(lastThing) {
   fs.writeFileSync(config.LOCAL_BASE_PATH, baseContent);
 }
 
+/**
+ * Build prompt from base_prompt.md if it exists
+ * @param {string} mcpDir - Path to .mcp directory
+ * @param {string} task - User task/intent
+ * @returns {string|null} Prompt content or null if base_prompt.md doesn't exist
+ */
+function buildFromBasePrompt(mcpDir, task) {
+  const basePromptPath = path.join(mcpDir, 'base_prompt.md');
+
+  if (!fs.existsSync(basePromptPath)) {
+    return null;
+  }
+
+  const baseContent = fs.readFileSync(basePromptPath, 'utf-8');
+  return `${baseContent.trim()}\n\n## Task\n\n${task || ''}`;
+}
+
 module.exports = {
   initializeBaseTemplate,
   applyTemplateReplacements,
-  updateBaseTemplateHistory
+  updateBaseTemplateHistory,
+  buildFromBasePrompt
 };
