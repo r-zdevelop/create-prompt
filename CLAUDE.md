@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`create-prompt` is a CLI tool for creating organized AI prompts with smart auto-filling, context detection, and MCP (Model Context Protocol) support. It's a zero-dependency Node.js CLI.
+`create-prompt` is a CLI tool for creating organized AI prompts with smart auto-filling and context detection. It's a zero-dependency Node.js CLI.
 
 ## Commands
 
@@ -14,9 +14,9 @@ node bin/create-prompt
 
 # Test specific commands
 node bin/create-prompt --help
-node bin/create-prompt init
-node bin/create-prompt enhance "your intent"
 node bin/create-prompt project-structure
+node bin/create-prompt files-markdown
+node bin/create-prompt finish
 ```
 
 No build step required - pure Node.js with CommonJS modules.
@@ -41,60 +41,56 @@ Utilities (src/utils/*.js)
 
 **Commands** (`src/commands/`):
 - `createPrompt.js` - Interactive prompt creation
-- `enhance.js` - MCP-powered contextualized prompt generation
-- `mcpInit.js` - Initialize `.create-prompt` directory from templates
 - `finishCommand.js` - Git commit workflow
 - `generateStructure.js` - Project tree generation
 - `generateFilesMarkdown.js` - File content aggregation
 
 **Services** (`src/services/`):
-- `mcpService.js` - MCP orchestration (loads context, schemas, templates)
 - `contextService.js` - Parses `.create-prompt/context/*.md` files with YAML frontmatter
-- `schemaService.js` - Parses JSON/YAML schemas, resolves variables
-- `intentService.js` - Parses casual user intents into structured requirements
 - `templateService.js` - Base prompt template handling
 - `promptService.js` - Prompt file creation
+- `projectService.js` - Project metadata detection
+- `gitContextService.js` - Git state reading
+- `relevanceService.js` - Context relevance scoring
+- `taskTypeService.js` - Task type detection
+- `requirementsService.js` - Task requirements inference
+- `fileSuggestionService.js` - Relevant file suggestions
 
 **Utilities** (`src/utils/`):
-- `promptBuilder.js` - Assembles prompts from components
 - `yamlParser.js` - Pure Node.js YAML parser (no dependencies)
 - `input.js` - `InputCollector` class wrapping readline
 - `gitignore.js` - Pattern matching for ignore files
 - `tree.js` - Directory tree generation
+- `slugify.js` - Filename slug generation
 
 ### Configuration
 
 All constants in `src/config.js`:
 - `PROMPT_DIR: '.create-prompt'` - Working directory for all commands
-- `MCP.*` - MCP-specific configuration
+- `RELEVANCE.*` - Context relevance filtering settings
+- `TASK_TYPES.*` - Task type detection settings
 - `MESSAGES.*` - User-facing strings
 - `ALWAYS_IGNORE` - Default ignore patterns
 
-### MCP Context System
+### Working Directory Structure
 
-The `.create-prompt` directory structure:
 ```
 .create-prompt/
-├── prompts/     ← JSON prompt templates
 ├── context/     ← Markdown context files with YAML frontmatter
-├── schemas/     ← JSON/YAML variable definitions
-└── config.json  ← MCP configuration
+├── base_prompt.md  ← Base prompt template (auto-created on first run)
+└── results/     ← Generated prompt files
 ```
 
-Bundled templates are in `templates/create-prompt/` and copied during `init`.
-
-### Data Flow for `enhance` Command
+### Data Flow for `p` (createPrompt)
 
 ```
-User Intent → intentService.parseIntent()
+User Input → collectUserInput()
                     ↓
-           mcpService.loadMcpContext()
+           contextService.loadContext()
                     ↓
-           contextService + schemaService
+           templateService.buildFromBasePrompt()
                     ↓
-           promptBuilder.buildPrompt()
-                    ↓
-           Generated Prompt
+           createPromptFile() → .create-prompt/results/
 ```
 
 ## Conventions
