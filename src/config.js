@@ -46,39 +46,6 @@ module.exports = {
     FOCUS_STRUCTURE: true              // Use focused project structure
   },
 
-  // MCP Configuration
-  MCP: {
-    DIR: '.create-prompt',
-    PROMPTS_SUBDIR: 'prompts',
-    CONTEXT_SUBDIR: 'context',
-    SCHEMAS_SUBDIR: 'schemas',
-    CONFIG_FILE: 'config.json',
-
-    DEFAULT_TEMPLATE: 'base',
-    DEFAULT_TARGET: 'claude',
-
-    SUPPORTED_SCHEMA_FORMATS: ['.json', '.yaml', '.yml'],
-    SUPPORTED_CONTEXT_FORMATS: ['.md', '.txt'],
-    SUPPORTED_TEMPLATE_FORMAT: '.json',
-
-    TARGETS: {
-      claude: { name: 'Claude', maxTokens: 200000 },
-      cursor: { name: 'Cursor', maxTokens: 128000 },
-      gpt: { name: 'GPT-4', maxTokens: 128000 },
-      antigravity: { name: 'Antigravity', maxTokens: 100000 },
-      generic: { name: 'Generic', maxTokens: null }
-    },
-
-    MESSAGES: {
-      NOT_INITIALIZED: 'MCP not initialized. Run `create-prompt mcp-init` first.',
-      TEMPLATE_NOT_FOUND: (name) => `Template "${name}" not found, using "base".`,
-      SCHEMA_ERROR: (file, error) => `Schema error in ${file}: ${error}`,
-      CONTEXT_NOT_FOUND: (file) => `Context file "${file}" not found, skipping.`,
-      PROMPT_GENERATED: 'Prompt generated successfully!',
-      VALIDATION_FAILED: (count) => `Validation failed with ${count} error(s).`
-    }
-  },
-
   // CLI messages
   MESSAGES: {
     WELCOME: (version, mode) => `\ncreate-prompt ${version} ${mode} – your daily prompt framework! \n`,
