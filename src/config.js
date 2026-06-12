@@ -54,6 +54,7 @@ module.exports = {
     BASE_COPIED_WITH_STRUCTURE: 'base_prompt.md copied to your project with auto-generated structure',
     GITIGNORE_UPDATED: '.create-prompt added to .gitignore',
     STRUCTURE_GENERATED: (filename) => `Project structure saved to ${filename}`,
+    INIT_DONE: '\n✨ create-prompt initialized! Run `p` to create your first prompt.\n',
   },
 
   // Prompts

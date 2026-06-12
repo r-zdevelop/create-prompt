@@ -5,7 +5,8 @@ const {
   createPrompt,
   generateStructure,
   generateFilesMarkdown,
-  finishCommand
+  finishCommand,
+  initCommand
 } = require('./commands');
 
 /**
@@ -23,6 +24,7 @@ function parseArguments(args) {
     projectStructure: args.includes('--project-structure') || command === 'project-structure' || command === 'ps',
     filesMarkdown: args.includes('--files-markdown') || command === 'files-markdown' || command === 'fm',
     finish: args.includes('finish') || command === 'finish' || command === 'f',
+    init: command === 'init',
     command: command,
     args: args
   };
@@ -42,6 +44,7 @@ USAGE:
   p <command>                    Run a specific command
 
 COMMANDS:
+  init                           Initialize create-prompt in the current project
   finish, f                      Finish and save the current prompt
   project-structure, ps          Generate project structure tree
   files-markdown, fm             Generate markdown file with project files
@@ -53,6 +56,7 @@ OPTIONS:
   --help, -h                     Show this help message
 
 EXAMPLES:
+  p init                         Set up create-prompt in the current project
   p                              Start interactive prompt creation
   p --quick                      Create prompt in quick mode
   p finish                       Finish current prompt
@@ -97,6 +101,12 @@ class CLI {
     // Handle help command
     if (options.help) {
       displayHelp(this.version);
+      return;
+    }
+
+    // Handle 'init' command
+    if (options.init) {
+      initCommand();
       return;
     }
 

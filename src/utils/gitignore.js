@@ -91,13 +91,19 @@ function shouldIgnore(itemPath, ignorePatterns) {
 
 /**
  * Add .create-prompt to .gitignore if not already present
+ * @param {Object} [options]
+ * @param {boolean} [options.createIfMissing=false] - Create .gitignore if it doesn't exist
  * @returns {boolean} True if added, false if already present
  */
-function ensureMcpInGitignore() {
+function ensureMcpInGitignore(options = {}) {
   const gitignorePath = path.join(process.cwd(), '.gitignore');
 
   if (!fs.existsSync(gitignorePath)) {
-    return false;
+    if (!options.createIfMissing) {
+      return false;
+    }
+    fs.writeFileSync(gitignorePath, '.create-prompt\n');
+    return true;
   }
 
   const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
