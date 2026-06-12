@@ -6,7 +6,8 @@ const {
   generateStructure,
   generateFilesMarkdown,
   finishCommand,
-  initCommand
+  initCommand,
+  personaCommand
 } = require('./commands');
 
 /**
@@ -25,6 +26,8 @@ function parseArguments(args) {
     filesMarkdown: args.includes('--files-markdown') || command === 'files-markdown' || command === 'fm',
     finish: args.includes('finish') || command === 'finish' || command === 'f',
     init: command === 'init',
+    persona: command === 'persona',
+    force: args.includes('--force'),
     command: command,
     args: args
   };
@@ -45,6 +48,7 @@ USAGE:
 
 COMMANDS:
   init                           Initialize create-prompt in the current project
+  persona [name]                 List or install a persona (backend, frontend, linux, php, javascript)
   finish, f                      Finish and save the current prompt
   project-structure, ps          Generate project structure tree
   files-markdown, fm             Generate markdown file with project files
@@ -57,6 +61,7 @@ OPTIONS:
 
 EXAMPLES:
   p init                         Set up create-prompt in the current project
+  p persona backend              Use the backend persona in this project
   p                              Start interactive prompt creation
   p --quick                      Create prompt in quick mode
   p finish                       Finish current prompt
@@ -107,6 +112,12 @@ class CLI {
     // Handle 'init' command
     if (options.init) {
       initCommand();
+      return;
+    }
+
+    // Handle 'persona' command
+    if (options.persona) {
+      personaCommand(args[1], options);
       return;
     }
 

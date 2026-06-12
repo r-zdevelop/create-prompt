@@ -3,11 +3,13 @@ const generateStructure = require('./generateStructure');
 const generateFilesMarkdown = require('./generateFilesMarkdown');
 const finishCommand = require('./finishCommand');
 const initCommand = require('./initCommand');
+const personaCommand = require('./personaCommand');
 
 module.exports = {
   createPrompt,
   generateStructure,
   generateFilesMarkdown,
   finishCommand,
-  initCommand
+  initCommand,
+  personaCommand
 };

@@ -17,6 +17,10 @@ module.exports = {
     return path.join(this.TEMPLATE_DIR, this.BASE_TEMPLATE_NAME);
   },
 
+  get PERSONAS_DIR() {
+    return path.join(this.TEMPLATE_DIR, 'personas');
+  },
+
   get LOCAL_BASE_PATH() {
     return path.join(process.cwd(), this.PROMPT_DIR, this.BASE_TEMPLATE_NAME);
   },
