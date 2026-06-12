@@ -5,8 +5,77 @@
  * Filters commits and history to only include task-relevant entries.
  */
 
+const { execSync } = require('child_process');
 const { scoreRelevance, extractTaskKeywords, isRelevant } = require('./relevanceService');
 const config = require('../config');
+
+/**
+ * Run a git command, returning null on any failure (not a repo, no commits, no git)
+ * @param {string} args - Arguments for git
+ * @returns {string|null}
+ */
+function runGit(args) {
+  try {
+    return execSync(`git ${args}`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Read current git state (branch and recent commits)
+ * @param {number} maxCommits - How many commits to include
+ * @returns {{ branch: string, commits: string[] } | null} Null if not a usable git repo
+ */
+function getGitState(maxCommits = 5) {
+  const branch = runGit('rev-parse --abbrev-ref HEAD');
+  if (branch === null) {
+    return null;
+  }
+
+  const log = runGit(`log -${maxCommits} --pretty=format:"%h %s"`);
+  return {
+    branch,
+    commits: log ? log.split('\n').filter(Boolean) : []
+  };
+}
+
+/**
+ * Build a recent_activity.md context file from git state
+ * @returns {string|null} Markdown content, or null if not a git repo
+ */
+function buildRecentActivityMarkdown() {
+  const state = getGitState();
+  if (!state) {
+    return null;
+  }
+
+  const lines = [
+    '---',
+    'type: history',
+    'priority: medium',
+    'tags: [git, history, activity]',
+    '---',
+    '',
+    '# Recent Activity',
+    '',
+    `**Branch:** ${state.branch}`,
+    ''
+  ];
+
+  if (state.commits.length > 0) {
+    lines.push('Latest commits (newest first):', '');
+    for (const commit of state.commits) {
+      const [hash, ...rest] = commit.split(' ');
+      lines.push(`- \`${hash}\` ${rest.join(' ')}`);
+    }
+  } else {
+    lines.push('_No commits yet._');
+  }
+
+  lines.push('');
+  return lines.join('\n');
+}
 
 /**
  * Parse commits from a commit log string
@@ -232,6 +301,8 @@ function createFilteredHistoryContext(originalContext, keywords, options = {}) {
 }
 
 module.exports = {
+  getGitState,
+  buildRecentActivityMarkdown,
   parseCommits,
   getRelevantCommits,
   filterHistory,

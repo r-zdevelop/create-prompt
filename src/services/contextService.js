@@ -219,6 +219,16 @@ function rebuildBasePrompt(mcpRoot = '.create-prompt') {
     return;
   }
 
+  // Preserve History section from the existing base_prompt.md across rebuilds
+  let historySection = '';
+  if (fs.existsSync(basePromptPath)) {
+    const existing = fs.readFileSync(basePromptPath, 'utf-8');
+    const historyMatch = existing.match(/## History[^\n]*\n[\s\S]*?(?=\n## |\n---|$)/);
+    if (historyMatch) {
+      historySection = historyMatch[0].trim();
+    }
+  }
+
   // Sort by priority (high first)
   const priorityOrder = { high: 0, medium: 1, low: 2 };
   files.sort((a, b) => {
@@ -227,8 +237,13 @@ function rebuildBasePrompt(mcpRoot = '.create-prompt') {
     return aPriority - bPriority;
   });
 
-  // Build content from context files
-  const sections = [];
+  // Build content: header first, then context files
+  const sections = [
+    '# [Main Topic/Goal]\n',
+    '**Date:** [YYYY-MM-DD]',
+    '**Tags:** [tag1, tag2, tag3]\n',
+    '---\n'
+  ];
 
   for (const file of files) {
     // Convert # headers to ## in content
@@ -238,10 +253,20 @@ function rebuildBasePrompt(mcpRoot = '.create-prompt') {
     sections.push('');
   }
 
-  // Add Task section at the end
+  // Re-append preserved History
+  if (historySection) {
+    sections.push(historySection);
+    sections.push('');
+  }
+
+  // Add Task scaffold at the end
   sections.push('---\n');
   sections.push('## Task\n');
-  sections.push('[SPECIFIC USER REQUEST/GOAL - This is what the user wants to achieve]');
+  sections.push(config.TASK_PLACEHOLDER + '\n');
+  sections.push('## Constraints\n');
+  sections.push('[OPTIONAL - Requirements or boundaries the solution must respect]\n');
+  sections.push('## Expected Output\n');
+  sections.push('[OPTIONAL - What the deliverable should look like: code, diff, explanation, tests]');
 
   const content = sections.join('\n');
   fs.writeFileSync(basePromptPath, content);

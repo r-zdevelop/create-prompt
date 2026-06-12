@@ -9,7 +9,8 @@
 - **Project Structure Generation**: Auto-generates project tree with customizable ignore patterns
 - **Persona Templates**: Built-in AI personas (backend, frontend, linux, php, javascript)
 - **Git Workflow Integration**: Structured commit tracking with file change documentation
-- **Auto-detection**: Reads package.json to fill tools, versions, and environment
+- **Auto-detection**: Reads package.json to fill project info, versions, and environment
+- **File Request Workflow**: Prompts instruct the AI to request file contents in a format ready for `p fm`
 - **Context Files**: Load reusable context from `.create-prompt/context/` into every prompt
 
 ## Installation
@@ -52,8 +53,11 @@ p init
 
 Sets up create-prompt in the current project:
 1. Scaffolds `.create-prompt/` with `base_prompt.md`, `context/`, and `results/`
-2. Adds `.create-prompt` to `.gitignore` (creates `.gitignore` if missing)
-3. Generates the project structure (same as `p ps`)
+2. Detects project metadata (name, stack, scripts) into `context/project_info.md`
+3. Installs `context/instructions.md` — tells the AI to request relevant files in a format ready for `p fm`
+4. Creates `requested_files.txt` and `ignore_files.txt` so `p fm` and `p ps` work out of the box
+5. Adds `.create-prompt` to `.gitignore` (creates `.gitignore` if missing)
+6. Generates the project structure and git activity (same as `p ps`)
 
 ### Create a Prompt
 
@@ -71,14 +75,14 @@ Creates a prompt file in `.create-prompt/results/YYYYMMDD_NN_slug.md`, using `ba
 p project-structure    # or: p ps
 ```
 
-Generates `.create-prompt/context/project_structure.md` with your directory tree and rebuilds `base_prompt.md`.
+Generates `.create-prompt/context/project_structure.md` with your directory tree, refreshes `context/recent_activity.md` (current branch + latest commits), and rebuilds `base_prompt.md`. Any `## History` entries in `base_prompt.md` are preserved across rebuilds.
 
-**Custom ignore patterns** — Create `.create-prompt/ignore_files.txt`:
+**Custom ignore patterns** — Edit `.create-prompt/ignore_files.txt` (created with sensible defaults like `dist/`, `coverage/`, `*.log`):
 ```txt
 public/images
 public/css
-*.log
-dist/
+*.old
+.env*
 ```
 
 ### Generate Files Markdown
@@ -89,7 +93,9 @@ p files-markdown    # or: p fm
 
 Aggregates file contents into `.create-prompt/requested_files.md`.
 
-**Setup** — Create `.create-prompt/requested_files.txt`:
+Generated prompts instruct the AI to reply with a plain list of file paths — paste that list into `requested_files.txt`, run `p fm`, and share the output.
+
+**Setup** — Edit `.create-prompt/requested_files.txt` (created by `p init`):
 ```txt
 src/index.js
 src/components/Header.jsx
@@ -122,21 +128,47 @@ Complete your work session:
 
 ---
 
+## Typical Workflow
+
+1. `p init` — set up the project (once)
+2. `p persona javascript` — pick a persona (optional)
+3. `p` — describe your task, get a complete prompt in `results/`
+4. Paste the prompt into your AI — it replies with the list of files it needs
+5. Paste that list into `.create-prompt/requested_files.txt` and run `p fm`
+6. Share `requested_files.md` with the AI — it completes the task with full context
+
+---
+
 ## Context Files
 
-Place Markdown files in `.create-prompt/context/` and they'll be included in every generated prompt:
+Markdown files in `.create-prompt/context/` are merged into `base_prompt.md`, ordered by their `priority` frontmatter (`high` → `medium` → `low`):
 
 ```
 .create-prompt/
 ├── context/
-│   ├── persona.md        # AI persona definition
-│   ├── standards.md      # Coding standards
-│   └── instructions.md   # Behavior rules
-├── base_prompt.md        # Base prompt template (auto-created)
-└── results/              # Generated prompts
+│   ├── persona.md             # AI persona (installed via `p persona`)
+│   ├── project_info.md        # Detected project metadata (created by `p init`)
+│   ├── project_structure.md   # Directory tree (refreshed by `p ps`)
+│   ├── recent_activity.md     # Git branch + latest commits (refreshed by `p ps`)
+│   └── instructions.md        # File request workflow rules (created by `p init`)
+├── base_prompt.md             # Assembled prompt template
+├── ignore_files.txt           # Patterns excluded from the structure tree
+├── requested_files.txt        # File list consumed by `p fm`
+└── results/                   # Generated prompts
 ```
 
-`p init` (or the first run of `p`) auto-creates `.create-prompt/base_prompt.md` with your project structure filled in.
+Add your own files (e.g. `standards.md`) with YAML frontmatter:
+
+```markdown
+---
+type: standards
+priority: high
+tags: [style, conventions]
+---
+
+# Coding Standards
+...
+```
 
 ---
 

@@ -92,3 +92,4 @@ async function generateFilesMarkdown() {
 }
 
 module.exports = generateFilesMarkdown;
+module.exports.ensureRequestedFilesExists = ensureRequestedFilesExists;

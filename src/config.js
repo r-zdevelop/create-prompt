@@ -21,6 +21,10 @@ module.exports = {
     return path.join(this.TEMPLATE_DIR, 'personas');
   },
 
+  get INSTRUCTIONS_TEMPLATE_PATH() {
+    return path.join(this.TEMPLATE_DIR, 'instructions.md');
+  },
+
   get LOCAL_BASE_PATH() {
     return path.join(process.cwd(), this.PROMPT_DIR, this.BASE_TEMPLATE_NAME);
   },
@@ -28,8 +32,11 @@ module.exports = {
   // Files and directories to always ignore
   ALWAYS_IGNORE: ['node_modules', '.git', '.DS_Store', 'vendor', '.create-prompt'],
 
+  // Placeholder filled with the user's task when generating a prompt
+  TASK_PLACEHOLDER: '[SPECIFIC USER REQUEST/GOAL - This is what the user wants to achieve]',
+
   // Version
-  VERSION: '1.5.0',
+  VERSION: '1.6.0',
 
   // Relevance Filtering Configuration
   RELEVANCE: {

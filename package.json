@@ -1,6 +1,6 @@
 {
   "name": "create-prompt",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Your daily prompt framework - creates organized AI prompts with smart auto-filling, context detection, and MCP context system.",
   "bin": {
     "create-prompt": "bin/create-prompt",

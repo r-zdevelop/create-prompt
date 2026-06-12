@@ -3,6 +3,7 @@ const path = require('path');
 const config = require('../config');
 const { getProjectStructureString } = require('../utils/tree');
 const { rebuildBasePrompt } = require('../services/contextService');
+const { buildRecentActivityMarkdown } = require('../services/gitContextService');
 
 /**
  * Ensure ignore_files.txt exists with default content
@@ -18,13 +19,20 @@ function ensureIgnoreFilesExists() {
 
   // Create ignore_files.txt if it doesn't exist
   if (!fs.existsSync(ignoreFilesPath)) {
-    const defaultContent = `# Add files or directories to ignore in project structure
-# One pattern per line
-# Examples:
-# public/images
-# public/css
-# node_modules
-# *.log
+    const defaultContent = `# Files and directories to exclude from the generated project structure
+# One pattern per line. Wildcards (*) are supported.
+.claude/
+.vscode/
+.idea/
+dist/
+build/
+coverage/
+*.old
+*.log
+package-lock.json
+.env*
+
+# Add your own patterns below:
 `;
     fs.writeFileSync(ignoreFilesPath, defaultContent);
     console.log(`✅ Created: ${ignoreFilesPath}`);
@@ -67,6 +75,14 @@ ${tree}\`\`\`
   fs.writeFileSync(filePath, content);
 
   console.log(config.MESSAGES.STRUCTURE_GENERATED(filePath));
+
+  // Refresh git recent activity context (skipped outside git repos)
+  const activityContent = buildRecentActivityMarkdown();
+  if (activityContent) {
+    const activityPath = path.join(contextDir, 'recent_activity.md');
+    fs.writeFileSync(activityPath, activityContent);
+    console.log(`✅ Updated: ${activityPath}`);
+  }
 
   // Rebuild base_prompt.md from all context files
   rebuildBasePrompt(promptsDir);

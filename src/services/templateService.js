@@ -61,10 +61,7 @@ function applyTemplateReplacements(content, data) {
 
   // Replace task if provided
   if (data.task) {
-    result = result.replace(
-      '[SPECIFIC USER REQUEST/GOAL - This is what the user wants to achieve]',
-      data.task
-    );
+    result = result.replace(config.TASK_PLACEHOLDER, data.task);
   }
 
   // Auto-fill context
@@ -145,8 +142,20 @@ function buildFromBasePrompt(mcpDir, task) {
     return null;
   }
 
-  const baseContent = fs.readFileSync(basePromptPath, 'utf-8');
-  return `${baseContent.trim()}\n\n## Task\n\n${task || ''}`;
+  let result = fs.readFileSync(basePromptPath, 'utf-8');
+
+  // Fill header: title from the task, date from the moment of creation
+  if (task) {
+    result = result.replace(/^# \[Main Topic\/Goal\]$/m, `# ${task}`);
+  }
+  result = result.replace('[YYYY-MM-DD]', new Date().toISOString().slice(0, 10));
+
+  // Fill the Task placeholder when present; otherwise append a Task section
+  if (task && result.includes(config.TASK_PLACEHOLDER)) {
+    return result.replace(config.TASK_PLACEHOLDER, task).trim() + '\n';
+  }
+
+  return `${result.trim()}\n\n## Task\n\n${task || ''}`;
 }
 
 module.exports = {
